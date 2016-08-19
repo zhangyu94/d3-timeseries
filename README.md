@@ -1,18 +1,19 @@
 # d3_linechart.js
 
 d3_linechart.js is a D3.js based line chart library that supports easy customization of line chart. 
-To render a line chart, follow the listed steps:
 
-Step1. Binding: use jquery to select a div, and bind a d3_linechart object to it with $("#"+divID).d3_linechart()
+##To render a line chart, follow the listed steps:
 
-Step2. Style specification: customize it with method chaining, such as $("#"+divID).d3_linechart().height(200).data(data)
+**Step1**. Binding: use jquery to select a div, and bind a d3_linechart object to it with $("#"+divID).d3_linechart()
 
-Step3. Render: Evoke ($("#"+divID).d3_linechart().render())() to get the chart rendered. Another option is to use d3_linechart = $("#"+divID).d3_linechart() to get the renderer, and render the chart yourself with svg.datum(data).call(d3_linechart)
+**Step2**. Style specification: customize it with method chaining, such as $("#"+divID).d3_linechart().height(200).data(data)
 
-Notice: to facilitate rendering in Step3, it is compulsory that data has been bound to the linechart.
+**Step3**. Render: Evoke ($("#"+divID).d3_linechart().render())() to get the chart rendered. Another option is to use d3_linechart = $("#"+divID).d3_linechart() to get the renderer, and render the chart yourself with svg.datum(data).call(d3_linechart)
+
+##Notice: to facilitate rendering in Step3, it is compulsory that data has been bound to the linechart.
 
 
-Usage example: 
+##Usage example: 
 var data = [{   
     	label: "Data Set 1", 
     	data: [

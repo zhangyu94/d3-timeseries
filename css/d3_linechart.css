@@ -1,0 +1,69 @@
+#renderplace1{
+	position: absolute;
+}
+
+.linechart_axis_text{
+	font: 12px sans-serif;
+	text-anchor: end;
+}
+
+.linechart_label_text{
+	font: 12px sans-serif;
+}
+
+.linechart_axis text{
+	font: 12px sans-serif;
+}
+
+.linechart_axis path{
+  	fill: none;
+  	stroke: #000;
+  	shape-rendering: crispEdges;
+}
+
+.d3_linechart_line > .line{
+	stroke-width: 1px;
+	fill:none;
+}
+
+.linechart_grid{
+	fill: none;
+}
+
+.linechart_grid line{
+  	stroke: rgba(0, 0, 0, 0.25);
+  	shape-rendering: crispEdges;
+}
+
+.brush .extent {
+  	stroke: #FFFFFF;
+  	stroke-opacity: 0.6;
+  	fill-opacity: 0.125;
+  	shape-rendering: crispEdges;
+}
+
+.brush .resize rect {
+  	fill:#000000;
+}
+
+.linechart_reset_zoom{
+	  position:absolute;
+	  border-radius: 1px;
+    border: solid 1px #e8e8e8;
+    text-align:center;
+    background: #f8f8f8;
+    z-index: 2;
+    font-size: 8px;
+    cursor: pointer;
+}
+
+.mouseovertip{
+    position:absolute;
+    border-radius: 3px;
+    border: solid 1px #80B0FF;
+    text-align:center;
+    background: #FDFDFD;
+    z-index: 2;
+    font-size: 12px;
+}
+

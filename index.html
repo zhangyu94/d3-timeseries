@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/d3_linechart.css">
+<body>
+    <div id="renderplace1">
+    </div>
+    <div id="renderplace2">
+    </div>
+    <div id="renderplace3">
+    </div>
+<script src="libs/d3.js"></script>
+<script src="libs/jquery.js"></script>
+<script src="libs/d3_linechart.js"></script>
+
+<script src="scripts/subject.js"></script>
+<script src="scripts/linechart.js"></script>
+<script>
+
+d3.select("#renderplace1")
+    .style("width","960px")
+    .style("height","300px")
+    .style("left","100px")
+    .style("top","200px")
+
+SUBJECT.setMessageFilter([
+    "display:linechart_view",
+    "hide:linechart_view",
+])
+SUBJECT.registerObserver(linechart_view)
+
+var DATACENTER = {
+    GLOBAL_STATIC:{
+        raw_data:undefined,
+    }
+}
+
+initialize(main)
+function initialize(callback)
+{
+    //data里面是一个数组时，要求所有数据中的x数组都相等
+    var data = [    {   
+                        label: "Data Set 1", 
+                        data: [
+/*
+                            {x:new Date("2016-05-31 00:00:00"),y:0},
+                            {x:new Date("2016-05-31 01:00:00"),y:1,color:"red"},
+                            {x:new Date("2016-05-31 02:00:00"),y:2,color:"red"},
+                            {x:new Date("2016-05-31 3:00:00"),y:-3},
+                            {x:new Date("2016-05-31 6:00:00"),y:4,color:"red"},
+                            {x:new Date("2016-05-31 6:05:00"),y:17},
+*/
+                            
+                            {x:0,y:0},
+                            {x:1,y:1,color:"red"},
+                            {x:2,y:2,color:"red"},
+                            {x:3,y:-3},
+                            {x:4,y:4,color:"red"},
+                            {x:5,y:17},
+                            {x:6,y:3},
+                            {x:7,y:3},      
+                            
+                            
+                        ],
+                    }, 
+                    { 
+                        label: "Data Set 2", 
+                        data: [
+                        /*
+                            {x:new Date("2016-05-31 00:00:00"),y:1},
+                            {x:new Date("2016-05-31 01:00:00"),y:1,color:"green"},
+                            {x:new Date("2016-05-31 02:00:00"),y:-4,color:"green"},
+                            {x:new Date("2016-05-31 3:00:00"),y:9,color:"green"},
+                            {x:new Date("2016-05-31 6:00:00"),y:16},
+                            {x:new Date("2016-05-31 6:05:00"),y:15},
+                            */
+                            
+
+                            {x:0,y:0,color:"green"},
+                            {x:1,y:1},
+                            {x:2,y:-4,color:"green"},
+                            {x:3,y:9,color:"green"},
+                            {x:4,y:16},
+                            {x:5,y:15},
+                            {x:6,y:15},
+                            {x:7,y:15},
+
+                            
+                        ],
+                    
+                    }];
+    DATACENTER.GLOBAL_STATIC.raw_data = data;
+    callback();
+}
+
+function main()
+{
+    SUBJECT.notifyObserver("display:linechart_view");
+}
+
+</script>

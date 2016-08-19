@@ -2,8 +2,6 @@
 
 d3_linechart.js is a D3.js based line chart library that supports easy customization of line chart. 
 
-<a href="https://d3js.org"><img src="http://vis.pku.edu.cn/wiki/_detail/visgroup/projects/timeline_explorer/system_8_19.png?id=visgroup%3Aprojects%3Atimeline_explorer%3Astart" align="left" hspace="10" vspace="6"></a>
-
 ##To render a line chart, follow the listed steps:
 
 **Step1**. Binding: use jquery to select a div, and bind a d3_linechart object to it with $("#"+divID).d3_linechart()

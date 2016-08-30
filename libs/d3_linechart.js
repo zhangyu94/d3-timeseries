@@ -1,4 +1,4 @@
-//version 1.1 2016.8.30
+//version 1.3 2016.8.30
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -60,6 +60,9 @@ $.fn.d3_linechart = function(){
                 .datum(data)
                 .call(chart);
         };
+        var x_scale = undefined;
+        var y_scale = undefined;
+        var draw_line = undefined;
 
         //在chart中不会修改的函数，允许修改
         var mousemove = function(){};
@@ -85,9 +88,9 @@ $.fn.d3_linechart = function(){
                 x.display_max = x.data_max;
                 
                 if (x_scale_type == "linear")
-                    var x_scale = d3.scale.linear()
+                    x_scale = d3.scale.linear()
                 else if (x_scale_type == "time")
-                    var x_scale = d3.time.scale()
+                    x_scale = d3.time.scale()
                 x_scale.range([0, innerwidth])
                     .domain([x.data_min, x.data_max]);    
 
@@ -102,7 +105,7 @@ $.fn.d3_linechart = function(){
                 });
                 y.display_min = y.data_min;
                 y.display_max = y.data_max;
-                var y_scale = d3.scale.linear()
+                y_scale = d3.scale.linear()
                     .range([innerheight, 0])
                     .domain([y.data_min, y.data_max]);
 
@@ -132,7 +135,7 @@ $.fn.d3_linechart = function(){
                 }
 
                 //画线的函数
-                var draw_line = d3.svg.line()
+                draw_line = d3.svg.line()
                     //.interpolate("basis")
                     .interpolate("linear")//不使用linear时，画hover的点不一定能保证和线对齐
                     .x(function(d) { 
@@ -287,6 +290,7 @@ $.fn.d3_linechart = function(){
                         colored_point_line_storage.push(cur_line_storage);
                     //}
                 }
+                //画标记好颜色的特殊点
                 data_lines.each(function(d,i){
                     var data = datasets[i].data;
                     var colored_storage = colored_point_line_storage[i];
@@ -323,7 +327,29 @@ $.fn.d3_linechart = function(){
                         }
                     }
                 })
-                
+
+                //画标记好图形的特殊点
+                data_lines.each(function(d,i){
+                    var data = datasets[i].data;
+                    for (var j=0;j<data.length;++j)
+                    {
+                        if (typeof(data[j].style)!="undefined")
+                        {
+                            d3.select(this).append("circle")
+                                .attr("class", "shaped_point")
+                                .data([{
+                                    x:data[j].x,
+                                    y:data[j].y,
+                                    radius:data[j].style.radius,
+                                }])
+                                .attr("cx",function(d){ return x_scale(d.x) })
+                                .attr("cy",function(d){ return y_scale(d.y) })
+                                .attr("r",function(d){return d.radius})
+                                .attr("fill",color_scale(i))
+                        }
+                    }
+                })
+
                 if (draw_datalabel)//如果需要画线末尾的label
                 {
                     data_lines.append("text")
@@ -666,6 +692,8 @@ $.fn.d3_linechart = function(){
             });
         }
 
+
+
         chart.mousemove = function(value){
             if (!arguments.length) return mousemove;
             if (typeof(value)!="function")
@@ -675,6 +703,21 @@ $.fn.d3_linechart = function(){
             }
             mousemove = value;
             return chart;
+        };
+
+        chart.draw_line = function(){
+            if (!arguments.length) return draw_line;
+            console.warn("cannot be customized: draw_line")
+        };
+
+        chart.x_scale = function(){
+            if (!arguments.length) return x_scale;
+            console.warn("cannot be customized: x_scale")
+        };
+
+        chart.y_scale = function(){
+            if (!arguments.length) return y_scale;
+            console.warn("cannot be customized: y_scale")
         };
 
         chart.draw_tick = function(){

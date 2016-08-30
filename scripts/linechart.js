@@ -101,6 +101,10 @@ var linechart_view = {
 
         //($("#"+divID).d3_linechart().zoom_to_xrange())([1,2]);
 
+        ($("#"+"renderplace2").d3_linechart()
+            .data(DATACENTER.GLOBAL_STATIC.raw_data)
+            .render())()
+
     },
 
 }

@@ -1,4 +1,4 @@
-//version 1.1
+//version 1.1 2016.8.30
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1

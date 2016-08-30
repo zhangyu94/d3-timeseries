@@ -1,3 +1,4 @@
+//version 1.1
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -17,8 +18,8 @@ $.fn.d3_linechart = function(){
         //在chart中不会修改的渲染外形变量
         var width = 640,  
             height = 480, 
-            xlabel = "X Axis Label",
-            ylabel = "Y Axis Label" ,
+            xlabel = "",//"X Axis Label"
+            ylabel = "",//"Y Axis Label"
             draw_xgrid = false,
             draw_ygrid = false,
             draw_datalabel = true,
@@ -281,10 +282,10 @@ $.fn.d3_linechart = function(){
                         cur_line_storage.push(cur_seg_storage)
                         j = j + (length-1);
                     }
-                    if (cur_line_storage.length != 0)
-                    {
+                    //if (cur_line_storage.length != 0)
+                    //{
                         colored_point_line_storage.push(cur_line_storage);
-                    }
+                    //}
                 }
                 data_lines.each(function(d,i){
                     var data = datasets[i].data;

@@ -94,7 +94,9 @@ var linechart_view = {
             .draw_xAxis(true)
             .draw_yAxis(true)
             .color_scale(d3.scale.category10())
-            .mousemove(function(){/*$("#renderplace1").d3_linechart().x().mousemove_value*/})
+            .mousemove_trigger(function(){console.log('mousemove233')})
+            .zoom_trigger(function(){console.log('zoom233')})
+            .pan_trigger(function(){console.log('pan233')})
             .render())();
 
         ($("#"+divID).d3_linechart().draw_tick())(2.4,"hhhh");

@@ -1,4 +1,4 @@
-//version 1.3 2016.8.30
+//version 1.4 2016.8.31 16:35
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -65,7 +65,9 @@ $.fn.d3_linechart = function(){
         var draw_line = undefined;
 
         //在chart中不会修改的函数，允许修改
-        var mousemove = function(){};
+        var mousemove_trigger = function(){};
+        var zoom_trigger = function(){};
+        var pan_trigger = function(){};
 
         function _get_core_element(jquery_element){
             return jquery_element[0];
@@ -169,9 +171,9 @@ $.fn.d3_linechart = function(){
                                 draw_mouseoverpoint(search_x,search_y,"mouseover_point_line_"+j)
                                 draw_mouseovertip(search_x,search_y,"mouseover_tip_"+j)
                             }
-                            if (typeof(mousemove)!="undefined")
+                            if (typeof(mousemove_trigger)!="undefined")
                             {
-                                mousemove();
+                                mousemove_trigger();
                             }
                         })
                         .on("mouseout",function(){
@@ -440,6 +442,12 @@ $.fn.d3_linechart = function(){
                             .transition()
                             .duration(transition_duration)
                             .attr("d", function(d){ return draw_line(d.line_data)})
+                    
+                        data_lines.selectAll(".shaped_point")
+                            .transition()
+                            .duration(transition_duration)
+                            .attr("cx",function(d){ return x_scale(d.x) })
+                            .attr("cy",function(d){ return y_scale(d.y) })
                     }
                     else
                     {
@@ -473,6 +481,14 @@ $.fn.d3_linechart = function(){
                             .attr("cy",function(d){ return y_scale(d.y) })
                         data_lines.selectAll(".colored_line")
                             .attr("d", function(d){ return draw_line(d.line_data)})
+
+                        data_lines.selectAll(".shaped_point")
+                            .attr("cx",function(d){ return x_scale(d.x) })
+                            .attr("cy",function(d){ return y_scale(d.y) })
+
+
+
+
                     }
 
                     if ( (extent[0]!=x.data_min) || (extent[1]!=x.data_max) )//如果没有reset zoom，就在svg上画一个reset按钮
@@ -493,6 +509,11 @@ $.fn.d3_linechart = function(){
                                         .style("top",top+"px")
                                         .on("click",function(d,i){
                                             zoompan_x([x.data_min,x.data_max],true,true)
+
+                                            if (typeof(zoom_trigger)!="undefined")
+                                            {
+                                                zoom_trigger();
+                                            }
                                         })
                                     .append("text")
                                         .text("reset")   
@@ -536,7 +557,7 @@ $.fn.d3_linechart = function(){
                         start_pageX = end_pageX;//更新start的锚定点
                         end_pageX = undefined;//重置end
 
-                        if (typeof(start_x) != "undefined" && typeof(end_x) != "undefined")
+                        if (typeof(start_x) != "undefined" && typeof(end_x) != "undefined")//panning
                         {
                             var delta_x = end_x - start_x;
                             var display_min = x.display_min - delta_x;
@@ -553,6 +574,11 @@ $.fn.d3_linechart = function(){
                                 var display_min = x.data_max - (x.display_max - x.display_min);
                             }
                             zoom_to_xrange([display_min,display_max],false,false)
+
+                            if (typeof(pan_trigger)!="undefined")
+                            {
+                                pan_trigger();
+                            }
                         }
                     }
                 }
@@ -565,6 +591,11 @@ $.fn.d3_linechart = function(){
                         if ( ! d3.event.sourceEvent.ctrlKey)//按住ctrl时不zoom in
                         {
                             zoom_to_xrange(extent,true,false)
+
+                            if (typeof(zoom_trigger)!="undefined")
+                            {
+                                zoom_trigger();
+                            }
                         }
                     }
                 }    
@@ -692,16 +723,36 @@ $.fn.d3_linechart = function(){
             });
         }
 
-
-
-        chart.mousemove = function(value){
-            if (!arguments.length) return mousemove;
+        chart.pan_trigger = function(value){
+            if (!arguments.length) return pan_trigger;
             if (typeof(value)!="function")
             {
-                console.warn("invalid value for mousemove",value);
+                console.warn("invalid value for pan_trigger",value);
                 return;
             }
-            mousemove = value;
+            pan_trigger = value;
+            return chart;
+        };
+
+        chart.zoom_trigger = function(value){
+            if (!arguments.length) return zoom_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for zoom_trigger",value);
+                return;
+            }
+            zoom_trigger = value;
+            return chart;
+        };
+
+        chart.mousemove_trigger = function(value){
+            if (!arguments.length) return mousemove_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for mousemove_trigger",value);
+                return;
+            }
+            mousemove_trigger = value;
             return chart;
         };
 

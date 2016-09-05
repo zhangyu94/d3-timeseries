@@ -1,4 +1,4 @@
-//version 1.4 2016.8.31 16:35
+//version 1.5 2016.9.5 9:41
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -94,7 +94,12 @@ $.fn.d3_linechart = function(){
                 else if (x_scale_type == "time")
                     x_scale = d3.time.scale()
                 x_scale.range([0, innerwidth])
-                    .domain([x.data_min, x.data_max]);    
+                    .domain([x.data_min, x.data_max]);
+                function x_scale_safe(x){
+                    if (typeof(x)=="undefined")
+                        return 0;
+                    return x_scale(x);
+                }
 
                 //统计y轴的scale取多少
                 y.data_min = d3.min(datasets, function(d) { 
@@ -110,6 +115,11 @@ $.fn.d3_linechart = function(){
                 y_scale = d3.scale.linear()
                     .range([innerheight, 0])
                     .domain([y.data_min, y.data_max]);
+                function y_scale_safe(y){
+                    if (typeof(y)=="undefined")
+                        return 0;
+                    return y_scale(y);
+                }
 
                 var x_axis = d3.svg.axis()
                     .scale(x_scale)
@@ -140,16 +150,8 @@ $.fn.d3_linechart = function(){
                 draw_line = d3.svg.line()
                     //.interpolate("basis")
                     .interpolate("linear")//不使用linear时，画hover的点不一定能保证和线对齐
-                    .x(function(d) { 
-                        if (typeof(d[0])!="undefined" && typeof(d[1])!="undefined")
-                            return x_scale(d[0]); 
-                        return 0;
-                    })
-                    .y(function(d) { 
-                        if (typeof(d[0])!="undefined" && typeof(d[1])!="undefined")
-                            return y_scale(d[1]); 
-                        return 0;
-                    });
+                    .x(function(d) { return x_scale_safe(d[0]); })
+                    .y(function(d) { return y_scale_safe(d[1]); });
 
                 var svg = d3.select(this)
                         .attr("id","svg_"+parent.attr("id"))
@@ -307,8 +309,8 @@ $.fn.d3_linechart = function(){
                             d3.select(this).append("circle")
                                 .attr("class", "colored_point")
                                 .data([{x:data[start_index].x,y:data[start_index].y}])
-                                .attr("cx",function(d){ return x_scale(d.x) })
-                                .attr("cy",function(d){ return y_scale(d.y) })
+                                .attr("cx",function(d){ return x_scale_safe(d.x) })
+                                .attr("cy",function(d){ return y_scale_safe(d.y) })
                                 .attr("r",3)
                                 .attr("fill",color)
                         }
@@ -344,8 +346,8 @@ $.fn.d3_linechart = function(){
                                     y:data[j].y,
                                     radius:data[j].style.radius,
                                 }])
-                                .attr("cx",function(d){ return x_scale(d.x) })
-                                .attr("cy",function(d){ return y_scale(d.y) })
+                                .attr("cx",function(d){ return x_scale_safe(d.x) })
+                                .attr("cy",function(d){ return y_scale_safe(d.y) })
                                 .attr("r",function(d){return d.radius})
                                 .attr("fill",color_scale(i))
                         }
@@ -357,7 +359,7 @@ $.fn.d3_linechart = function(){
                     data_lines.append("text")
                         .attr("class","linechart_label_text")
                         .datum(function(d, i) { return {name: datasets[i].label, final: d[d.length-1]}; }) 
-                        .attr("transform", function(d) { return ( "translate(" + x_scale(d.final[0]) + "," + y_scale(d.final[1]) + ")" ) ; })
+                        .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                         .attr("x", 3)
                         .attr("dy", ".35em")
                         .attr("fill", function(_, i) { return color_scale(i); })
@@ -425,19 +427,19 @@ $.fn.d3_linechart = function(){
                         g.selectAll(".mouseoverpoint")
                             .transition()
                             .duration(transition_duration)
-                            .attr("cx",function(d,i){ return x_scale(d.x_value) })
-                            .attr("cy",function(d,i){ return y_scale(d.y_value) })
+                            .attr("cx",function(d,i){ return x_scale_safe(d.x_value) })
+                            .attr("cy",function(d,i){ return y_scale_safe(d.y_value) })
 
                         data_lines.selectAll(".linechart_label_text")//line尾巴上的text label
                             .transition()
                             .duration(transition_duration)
-                            .attr("transform", function(d) { return ( "translate(" + x_scale(d.final[0]) + "," + y_scale(d.final[1]) + ")" ) ; })
+                            .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                     
                         data_lines.selectAll(".colored_point")
                             .transition()
                             .duration(transition_duration)
-                            .attr("cx",function(d){ return x_scale(d.x) })
-                            .attr("cy",function(d){ return y_scale(d.y) })
+                            .attr("cx",function(d){ return x_scale_safe(d.x) })
+                            .attr("cy",function(d){ return y_scale_safe(d.y) })
                         data_lines.selectAll(".colored_line")
                             .transition()
                             .duration(transition_duration)
@@ -446,8 +448,8 @@ $.fn.d3_linechart = function(){
                         data_lines.selectAll(".shaped_point")
                             .transition()
                             .duration(transition_duration)
-                            .attr("cx",function(d){ return x_scale(d.x) })
-                            .attr("cy",function(d){ return y_scale(d.y) })
+                            .attr("cx",function(d){ return x_scale_safe(d.x) })
+                            .attr("cy",function(d){ return y_scale_safe(d.y) })
                     }
                     else
                     {
@@ -465,26 +467,26 @@ $.fn.d3_linechart = function(){
 
                         g.selectAll(".label_tick")
                             .attr("d",function(d,i){
-                                var display_x = x_scale(d);
+                                var display_x = x_scale_safe(d);
                                 return "M"+display_x+","+0 + "L"+display_x+ ","+innerheight;
                             })
 
                         g.selectAll(".mouseoverpoint")
-                            .attr("cx",function(d,i){ return x_scale(d.x_value) })
-                            .attr("cy",function(d,i){ return y_scale(d.y_value) })    
+                            .attr("cx",function(d,i){ return x_scale_safe(d.x_value) })
+                            .attr("cy",function(d,i){ return y_scale_safe(d.y_value) })    
 
                         data_lines.selectAll(".linechart_label_text")
-                            .attr("transform", function(d) { return ( "translate(" + x_scale(d.final[0]) + "," + y_scale(d.final[1]) + ")" ) ; })
+                            .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                         
                         data_lines.selectAll(".colored_point")
-                            .attr("cx",function(d){ return x_scale(d.x) })
-                            .attr("cy",function(d){ return y_scale(d.y) })
+                            .attr("cx",function(d){ return x_scale_safe(d.x) })
+                            .attr("cy",function(d){ return y_scale_safe(d.y) })
                         data_lines.selectAll(".colored_line")
                             .attr("d", function(d){ return draw_line(d.line_data)})
 
                         data_lines.selectAll(".shaped_point")
-                            .attr("cx",function(d){ return x_scale(d.x) })
-                            .attr("cy",function(d){ return y_scale(d.y) })
+                            .attr("cx",function(d){ return x_scale_safe(d.x) })
+                            .attr("cy",function(d){ return y_scale_safe(d.y) })
 
 
 
@@ -626,8 +628,8 @@ $.fn.d3_linechart = function(){
                         .data([{x_value:x_value,y_value:y_value}])
                         .attr("id",id)
                         .attr("class","mouseoverpoint")
-                        .attr("cx",function(d,i){ return x_scale(d.x_value) })
-                        .attr("cy",function(d,i){ return y_scale(d.y_value) })
+                        .attr("cx",function(d,i){ return x_scale_safe(d.x_value); })
+                        .attr("cy",function(d,i){ return y_scale_safe(d.y_value); })
                         .attr("r",r)
                         .attr("fill","#80B0FF")
                         .attr("stroke-width",5)
@@ -666,10 +668,12 @@ $.fn.d3_linechart = function(){
                     var left_bias = 0;
 
                     div.style("left",function(d,i){
-                            return x_scale(d.x_value) + anchor_left + margin.left - self_width/2 - left_bias + "px";
+                            var x_pixel = x_scale_safe(d.x_value); 
+                            return x_pixel + anchor_left + margin.left - self_width/2 - left_bias + "px";
                         })
                         .style("top",function(d,i){
-                            return y_scale(d.y_value) + anchor_top + margin.top - self_height - height_bias + "px";
+                            var y_pixel = y_scale_safe(d.y_value); 
+                            return y_pixel + anchor_top + margin.top - self_height - height_bias + "px";
                         })
 
                 }

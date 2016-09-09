@@ -1,4 +1,4 @@
-//version 1.5 2016.9.5 9:41
+//version 1.5 2016.9.9 19:03
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -128,7 +128,7 @@ $.fn.d3_linechart = function(){
                 var y_axis = d3.svg.axis()
                     .scale(y_scale)
                     .orient("left")
-                    .tickFormat(d3.format(""))
+                    .tickFormat(d3.format(".4g"))
 
                 var tickValues = [];
                 if (typeof(yTickNum)!="undefined")//如果需要约束y轴的tick的数量
@@ -289,10 +289,7 @@ $.fn.d3_linechart = function(){
                         cur_line_storage.push(cur_seg_storage)
                         j = j + (length-1);
                     }
-                    //if (cur_line_storage.length != 0)
-                    //{
-                        colored_point_line_storage.push(cur_line_storage);
-                    //}
+                    colored_point_line_storage.push(cur_line_storage);
                 }
                 //画标记好颜色的特殊点
                 data_lines.each(function(d,i){
@@ -311,7 +308,7 @@ $.fn.d3_linechart = function(){
                                 .data([{x:data[start_index].x,y:data[start_index].y}])
                                 .attr("cx",function(d){ return x_scale_safe(d.x) })
                                 .attr("cy",function(d){ return y_scale_safe(d.y) })
-                                .attr("r",3)
+                                .attr("r",1)
                                 .attr("fill",color)
                         }
                         else
@@ -377,8 +374,13 @@ $.fn.d3_linechart = function(){
                     .selectAll("rect")//在call返回的语境，即g的语境下，selectAll
                     .attr("height", innerheight);
 
-                zoom_to_xrange = function zoompan_x(extent,is_zoom=true,force_scale=true)
+                zoom_to_xrange = function zoompan_x(extent,is_zoom,force_scale)
                 {
+                    if (typeof(is_zoom)=="undefined")
+                        is_zoom = true;
+                    if (typeof(force_scale)=="undefined")
+                        force_scale = true;
+
                     if ( (extent[0]==x.data_min) && (extent[1]==x.data_max) )//zoom回初始状态后删掉zoom按钮
                     {
                         d3.select(".linechart_reset_zoom"+"#linechart_reset_zoom_"+parent_id).remove()
@@ -487,9 +489,6 @@ $.fn.d3_linechart = function(){
                         data_lines.selectAll(".shaped_point")
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
-
-
-
 
                     }
 
@@ -602,8 +601,11 @@ $.fn.d3_linechart = function(){
                     }
                 }    
 
-                draw_tick = function(x_value,id,color="red")
+                draw_tick = function(x_value,id,color)
                 {
+                    if (typeof(color) == "undefined")
+                        color = "red";
+
                     if (! (g.select("#"+id)[0][0]===null) )
                     {
                         g.select("#"+id).remove();
@@ -621,8 +623,11 @@ $.fn.d3_linechart = function(){
                         .attr("stroke-width",1)
                 }
 
-                function draw_mouseoverpoint(x_value,y_value,id,r=5)
+                function draw_mouseoverpoint(x_value,y_value,id,r)
                 {
+                    if (typeof(r)=="undefined")
+                        r = 5;
+
                     g.selectAll("#"+id).remove();//删掉老的point
                     g.append("circle")
                         .data([{x_value:x_value,y_value:y_value}])

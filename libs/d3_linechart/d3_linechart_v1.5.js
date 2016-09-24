@@ -1,4 +1,4 @@
-//version 1.5 2016.9.9 19:03
+//version 1.5 2016.9.17 11:40
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -29,10 +29,18 @@ $.fn.d3_linechart = function(){
             draw_yAxis = true,
             transition_duration = 500,
             color_scale = function(i){return "#80B0FF";},
-            x_scale_type = "linear";
+            x_scale_type = "time",//time或linear
+            line_width = 1;
 
         //在chart中不会修改的其他变量
         var linechart_id = undefined;
+        var mouseover_trigger_tip = true;
+        var mouseover_trigger_point = true;
+        var tip_option = {
+            use_multi_tip : true,
+            rigid_position : true,
+        }
+        var enable_zoom = true;
 
         //在chart中会修改的变量
         var x = {   data_min:undefined,
@@ -42,6 +50,7 @@ $.fn.d3_linechart = function(){
                     display_max:undefined,},
             y = {   data_min:undefined,
                     data_max:undefined,
+                    mousemove_value:undefined,
                     display_min:undefined,
                     display_max:undefined,},
             g = undefined;
@@ -159,31 +168,89 @@ $.fn.d3_linechart = function(){
                         .attr("height", height)
                 g = svg.append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                        .on("mousemove",function(){
-                            var corrected_offsetX = d3.event.layerX - margin.left;
-                            var value_x = x_scale.invert(corrected_offsetX);
-                            x.mousemove_value = value_x;
-                            for (var j=0;j<datasets.length;++j)
-                            {
-                                var search_result = binary_search(value_x,datasets[j].data,"x");
-                                var search_index = search_result.index;
-                                var search_x = datasets[j].data[search_index].x;
-                                var search_y = datasets[j].data[search_index].y;
-
-                                draw_mouseoverpoint(search_x,search_y,"mouseover_point_line_"+j)
-                                draw_mouseovertip(search_x,search_y,"mouseover_tip_"+j)
-                            }
-                            if (typeof(mousemove_trigger)!="undefined")
-                            {
-                                mousemove_trigger();
-                            }
-                        })
+                        .on("mousemove",function(d){ mouseover_g(d); })
+                        .on("mouseover",function(d){ mouseover_g(d); })
                         .on("mouseout",function(){
                             x.mousemove_value = undefined;
+                            y.mousemove_value = undefined;
                             remove_points("mouseoverpoint")
                             remove_mouseovertip()
                         })
-                
+                function mouseover_g(d)
+                {
+                    var corrected_offsetX = d3.event.layerX - margin.left;
+                    var value_x = x_scale.invert(corrected_offsetX);
+                    x.mousemove_value = value_x;
+                    var corrected_offsetY = d3.event.layerY - margin.top;
+                    var value_y = y_scale.invert(corrected_offsetY);
+                    y.mousemove_value = value_y;
+                    if (tip_option.use_multi_tip == true)
+                    {
+                        for (var j=0;j<datasets.length;++j)
+                        {
+                            var search_result = binary_search(value_x,datasets[j].data,"x");
+                            var search_item = search_result.item;
+                            var item_x = search_item.x;
+                            var item_y = search_item.y;
+                            var item_color = search_item.color;
+                            if ( (typeof(item_color) == "undefined") && (typeof(item_y) == "undefined") )
+                                item_color = "grey";
+
+                            if (mouseover_trigger_point)
+                                draw_mouseoverpoint(item_x,item_y,"mouseover_point_line_"+j,item_color);
+                            if (mouseover_trigger_tip)
+                                draw_mouseovertip(item_x,item_y,"mouseover_tip_"+j,item_color)
+                        }
+                    }
+                    else
+                    {
+                        if (tip_option.rigid_position == false)
+                        {
+                            var item_x = value_x;
+                            var item_y = value_y;
+                            var item_color = undefined;
+                            if ( (typeof(item_color) == "undefined") && (typeof(item_y) == "undefined") )
+                                item_color = "grey";
+                            if (mouseover_trigger_tip)
+                                draw_mouseovertip(item_x,item_y,"mouseover_tip_"+0,item_color)
+                        }
+                        else
+                        {
+                            var final_search_result = undefined;
+                            for (var j=0;j<datasets.length;++j)
+                            {
+                                var temp_search_result = binary_search(value_x,datasets[j].data,"x");
+                                if (typeof(final_search_result) == "undefined")
+                                    final_search_result = temp_search_result;
+                                else
+                                {
+                                    var temp_deviation =    Math.pow(temp_search_result.item.x-value_x,2) + 
+                                                            Math.pow(temp_search_result.item.y-value_y,2);
+                                    var final_deviation =   Math.pow(final_search_result.item.x-value_x,2) + 
+                                                            Math.pow(final_search_result.item.y-value_y,2);
+                                    if (final_deviation > temp_deviation)
+                                        final_search_result = temp_search_result;
+                                }
+                            }
+                            
+                            var search_item = final_search_result.item;
+                            var item_x = search_item.x;
+                            var item_y = search_item.y;
+                            var item_color = search_item.color;
+                            if ( (typeof(item_color) == "undefined") && (typeof(item_y) == "undefined") )
+                                item_color = "grey";
+                            if (mouseover_trigger_tip)
+                                draw_mouseovertip(item_x,item_y,"mouseover_tip_"+0,item_color)
+                        }
+                    }
+
+                    if (typeof(mousemove_trigger)!="undefined")
+                    {
+                        mousemove_trigger(d,search_item);
+                    }
+                }
+
+
                 if (draw_xgrid)//如果需要画x轴向上的grid
                 {
                     var x_grid = d3.svg.axis()
@@ -241,7 +308,22 @@ $.fn.d3_linechart = function(){
                             .attr("dy", "0.71em")
                             .text(ylabel);
                 }
-                
+
+                //加brush
+                if (enable_zoom)
+                {
+                    var brush = d3.svg.brush()
+                        .x(x_scale)
+                        .on("brushstart", brushstart)
+                        .on("brush", brushmove)
+                        .on("brushend", brushend);
+                    g.append("g")
+                        .attr("class", "x brush")
+                        .call(brush)
+                        .selectAll("rect")//在call返回的语境，即g的语境下，selectAll
+                        .attr("height", innerheight);
+                }
+
                 //画线
                 var data_lines = g.selectAll(".d3_linechart_line")
                     .data(datasets.map(function(d) {
@@ -257,7 +339,14 @@ $.fn.d3_linechart = function(){
                 data_lines.append("path")
                     .attr("class", "line")
                     .attr("d", function(d) { return draw_line(d); })
-                    .attr("stroke", function(_, i) {return color_scale(i);});
+                    .attr("stroke", function(_, i) {return color_scale(i);})
+                    .attr("stroke-width",function(){return line_width;})
+                    .on("mouseover",function(){
+                        d3.select(this).classed("mouseover_linechart",true)
+                    })
+                    .on("mouseout",function(){
+                        d3.select(this).classed("mouseover_linechart",false)
+                    })
 
                 //画标记好颜色的特殊点
                 var colored_point_line_storage =[];
@@ -308,7 +397,7 @@ $.fn.d3_linechart = function(){
                                 .data([{x:data[start_index].x,y:data[start_index].y}])
                                 .attr("cx",function(d){ return x_scale_safe(d.x) })
                                 .attr("cy",function(d){ return y_scale_safe(d.y) })
-                                .attr("r",1)
+                                .attr("r",line_width/2)
                                 .attr("fill",color)
                         }
                         else
@@ -323,6 +412,7 @@ $.fn.d3_linechart = function(){
                                 .attr("class", "colored_line")
                                 .data([{line_data:line_data}])
                                 .attr("d", function(d){ return draw_line(d.line_data)})
+                                .attr("stroke-width",line_width)
                                 .attr("fill","none")
                                 .attr("stroke", color);
                         }
@@ -362,17 +452,6 @@ $.fn.d3_linechart = function(){
                         .attr("fill", function(_, i) { return color_scale(i); })
                         .text(function(d) { return d.name; });
                 }
-
-                var brush = d3.svg.brush()
-                    .x(x_scale)
-                    .on("brushstart", brushstart)
-                    .on("brush", brushmove)
-                    .on("brushend", brushend);
-                g.append("g")
-                    .attr("class", "x brush")
-                    .call(brush)
-                    .selectAll("rect")//在call返回的语境，即g的语境下，selectAll
-                    .attr("height", innerheight);
 
                 zoom_to_xrange = function zoompan_x(extent,is_zoom,force_scale)
                 {
@@ -494,15 +573,15 @@ $.fn.d3_linechart = function(){
 
                     if ( (extent[0]!=x.data_min) || (extent[1]!=x.data_max) )//如果没有reset zoom，就在svg上画一个reset按钮
                     {
-                        var top = parent.offset().top + margin.top;
-                        var left = parent.offset().left + margin.left;
+                        var top = margin.top;
+                        var left = margin.left;
                         
                         if (d3.select(".linechart_reset_zoom"+"#linechart_reset_zoom_"+parent_id)[0][0]===null)//如果之前body没有加过reset按钮，才再画一个，否则不画
                         {
                             _draw_reset_buttom()
                             function _draw_reset_buttom()
                             {
-                                d3.select("body")
+                                d3.select("#"+parent_id)
                                     .append("div")
                                         .attr("id","linechart_reset_zoom_"+parent_id)
                                         .attr("class","linechart_reset_zoom")
@@ -623,22 +702,39 @@ $.fn.d3_linechart = function(){
                         .attr("stroke-width",1)
                 }
 
-                function draw_mouseoverpoint(x_value,y_value,id,r)
+                function draw_mouseoverpoint(x_value,y_value,id,color,r)
                 {
                     if (typeof(r)=="undefined")
                         r = 5;
 
-                    g.selectAll("#"+id).remove();//删掉老的point
-                    g.append("circle")
+                    if (typeof(color) == "undefined")
+                        var circle_color = "#80B0FF";
+                    else
+                        var circle_color = color;
+
+                    var flag_new_point = false;
+                    if (g.select("#"+id)[0][0]==null)
+                    {
+                        flag_new_point = true;
+                    }
+                    if (flag_new_point)
+                    {
+                        g.append("circle")
+                            .attr("id",id)
+                            .attr("class","mouseoverpoint")
+                    }
+                    var point = g.select("#"+id)
                         .data([{x_value:x_value,y_value:y_value}])
-                        .attr("id",id)
-                        .attr("class","mouseoverpoint")
-                        .attr("cx",function(d,i){ return x_scale_safe(d.x_value); })
+                    if (!flag_new_point)
+                    {
+                        point = point.transition()
+                            .duration(2);
+                    }
+                    point.attr("cx",function(d,i){ return x_scale_safe(d.x_value); })
                         .attr("cy",function(d,i){ return y_scale_safe(d.y_value); })
                         .attr("r",r)
-                        .attr("fill","#80B0FF")
-                        .attr("stroke-width",5)
-                        .attr("stroke","#D0E0FF")
+                        .attr("fill",circle_color)  
+                        .attr("stroke",d3.lab(circle_color).brighter(3))      
                 }
 
                 function remove_points(class_name)
@@ -646,7 +742,7 @@ $.fn.d3_linechart = function(){
                     g.selectAll("."+class_name).remove();
                 }
 
-                function draw_mouseovertip(x_value,y_value,id)
+                function draw_mouseovertip(x_value,y_value,id,color)
                 {
                     if (x_value < x_scale.domain()[0] || x_value > x_scale.domain()[1])//越界，此时需要专门删掉之前因为越界而不需要的tip
                     {
@@ -654,25 +750,57 @@ $.fn.d3_linechart = function(){
                         return;
                     }
 
-                    var anchor_top = parent.offset().top;
-                    var anchor_left = parent.offset().left;
+                    if (typeof(color) == "undefined")
+                        var tip_color = "#80B0FF";
+                    else
+                        var tip_color = color;
 
-                    d3.select("body").selectAll("#"+id).remove();//删掉老的tip
-                    var div = d3.select("body")
+                    var flag_new_tip = false;
+                    if (d3.select("body").select("#"+id)[0][0]==null)
+                    {
+                        flag_new_tip = true;
+                    }
+                    if (flag_new_tip)
+                    {
+                        d3.select("body")
                             .append("div")
-                                .data([{x_value:x_value,y_value:y_value}])
                                 .attr("id",id)
                                 .attr("class","mouseovertip")
+                    }
+                    var div = d3.select("#"+id)
+                                    .data([{x_value:x_value,y_value:y_value}])
                     div.html(function(d,i){
-                        return   "x: "+d.x_value + " y: "+d.y_value;
+                        //console.log(x_scale_type," time?")
+                        if (x_scale_type == "time")
+                        {
+                            return  "<table>" + 
+                                    "<tr><td>" + "time: " + (new Date(d.x_value)).toLocaleString() + "</tb></tr>" +
+                                    "<tr><td>" + "value: " + d.y_value + "</tb></tr>" +
+                                    "</table>"
+                        }
+                        else
+                        {
+                            return  "<table>" + 
+                                    "<tr><td>" + "x: " + d.x_value + "</tb></tr>" +
+                                    "<tr><td>" + "y: " + d.y_value + "</tb></tr>" +
+                                    "</table>"
+                        }
                     })
 
+                    var anchor_top = parent.offset().top;
+                    var anchor_left = parent.offset().left;
                     var self_width = $("#"+id).width();
                     var self_height = $("#"+id).height();
                     var height_bias = 15;
                     var left_bias = 0;
 
-                    div.style("left",function(d,i){
+                    if (!flag_new_tip)
+                    {
+                        div = div.transition()
+                            .duration(1);
+                    }
+                    div.style("border-color",tip_color)
+                        .style("left",function(d,i){
                             var x_pixel = x_scale_safe(d.x_value); 
                             return x_pixel + anchor_left + margin.left - self_width/2 - left_bias + "px";
                         })
@@ -713,19 +841,23 @@ $.fn.d3_linechart = function(){
                     }
 
                     var upper_bound_index = start_index;
-                    var upper_bound_value = typeof(key_attr)=="undefined" ? data_array[upper_bound_index] : data_array[upper_bound_index][key_attr];
+                    var upper_bound_item = data_array[upper_bound_index];
+                    var upper_bound_value = typeof(key_attr)=="undefined" ? upper_bound_item : upper_bound_item[key_attr];
                     var lower_bound_index = (start_index-1) >=0 ? (start_index-1) : start_index;
-                    var lower_bound_value = typeof(key_attr)=="undefined" ? data_array[lower_bound_index] : data_array[lower_bound_index][key_attr];
+                    var lower_bound_item = data_array[lower_bound_index];
+                    var lower_bound_value = typeof(key_attr)=="undefined" ? lower_bound_item : lower_bound_item[key_attr];
 
                     if (Math.abs(upper_bound_value - target_value) < Math.abs(lower_bound_value - target_value))
                     {
                         return {    index: upper_bound_index,
-                                    value: upper_bound_value};
+                                    value: upper_bound_value,
+                                    item: upper_bound_item};
                     }
                     else
                     {
                         return {    index: lower_bound_index,
-                                    value: lower_bound_value};
+                                    value: lower_bound_value,
+                                    item: lower_bound_item};
                     }
                 }
 
@@ -806,6 +938,17 @@ $.fn.d3_linechart = function(){
             return chart;
         };
 
+        chart.line_width = function(value){
+            if (!arguments.length) return line_width;
+            if (typeof(value)!="number")
+            {
+                console.warn("invalid value for line_width",value);
+                return;
+            }
+            line_width = value;
+            return chart;
+        };
+
         chart.x_scale_type = function(value){
             if (!arguments.length) return x_scale_type;
             if (typeof(value)!="string")
@@ -839,6 +982,8 @@ $.fn.d3_linechart = function(){
                 y.data_min = value.data_min;
             if (typeof(value.data_max)=="number")
                 y.data_max = value.data_max;
+            if (typeof(value.mousemove_value)!="undefined")
+                console.warn("cannot be customized: y.mousemove_value");
             if (typeof(value.display_min)=="number")
                 y.display_min = value.display_min;
             if (typeof(value.display_max)=="number")
@@ -1013,6 +1158,57 @@ $.fn.d3_linechart = function(){
                 return;
             }
             ylabel = value ;
+            return chart ;
+        };
+
+        chart.enable_zoom = function(value) {
+            if(!arguments.length) return enable_zoom;
+            if (typeof(value)!="boolean")
+            {
+                console.warn("invalid value for enable_zoom",value);
+                return;
+            }
+            enable_zoom = value ;
+            return chart ;
+        };
+
+        chart.tip_option = function(value) {
+            if(!arguments.length) return tip_option;
+            if (typeof(value)!="object")
+            {
+                console.warn("invalid value for tip_option",value);
+                return;
+            }
+            else
+            {
+                if (typeof(value.use_multi_tip)=="boolean")
+                    tip_option.use_multi_tip = value.use_multi_tip;
+
+                if (typeof(value.rigid_position)=="boolean")
+                    tip_option.rigid_position = value.rigid_position;
+            }
+            return chart ;
+        };
+
+        chart.mouseover_trigger_tip = function(value) {
+            if(!arguments.length) return mouseover_trigger_tip;
+            if (typeof(value)!="boolean")
+            {
+                console.warn("invalid value for mouseover_trigger_tip",value);
+                return;
+            }
+            mouseover_trigger_tip = value ;
+            return chart ;
+        };
+
+        chart.mouseover_trigger_point = function(value) {
+            if(!arguments.length) return mouseover_trigger_point;
+            if (typeof(value)!="boolean")
+            {
+                console.warn("invalid value for mouseover_trigger_point",value);
+                return;
+            }
+            mouseover_trigger_point = value ;
             return chart ;
         };
 

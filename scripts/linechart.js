@@ -82,7 +82,7 @@ var linechart_view = {
             .data(DATACENTER.GLOBAL_STATIC.raw_data)
             //.height(200)
             //.width(width)
-            //.x_scale_type("time")
+            .x_scale_type("linear")
             .xlabel("")
             .ylabel("") 
             .draw_xgrid(true)
@@ -105,6 +105,7 @@ var linechart_view = {
 
         ($("#"+"renderplace2").d3_linechart()
             .data(DATACENTER.GLOBAL_STATIC.raw_data)
+            .x_scale_type("linear")
             .render())()
 
     },

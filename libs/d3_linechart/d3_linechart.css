@@ -1,4 +1,4 @@
-/*version 1.2 2016.8.30*/
+/*version 1.3 2016.9.19 10:49*/
 #renderplace1{
 	position: absolute;
 }
@@ -23,8 +23,8 @@
 }
 
 .d3_linechart_line > .line{
-	stroke-width: 1px;
 	fill:none;
+  z-index: 3;
 }
 
 .linechart_grid{
@@ -61,10 +61,31 @@
 .mouseovertip{
     position:absolute;
     border-radius: 3px;
-    border: solid 1px #80B0FF;
+    border: solid 1px;
+    opacity: 0.875;
     text-align:center;
     background: #FDFDFD;
     z-index: 2;
     font-size: 12px;
+    pointer-events:none;
 }
 
+.mouseoverpoint{
+    pointer-events:none;
+    stroke-width:5px;
+    opacity: 0.65;
+}
+
+.mouseover_linechart{
+    stroke:yellow;
+}
+
+/*let colored line become unable to be mouseovered*/
+.colored_line{
+    pointer-events:none;
+    z-index: 3;
+}
+/*let colored point become unable to be mouseovered*/
+.colored_point{
+    pointer-events:none;
+}

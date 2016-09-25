@@ -1,4 +1,4 @@
-//version 1.5 2016.9.17 11:40
+//version 1.5 2016.9.25 11:40
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -28,7 +28,7 @@ $.fn.d3_linechart = function(){
             draw_xAxis = true,
             draw_yAxis = true,
             transition_duration = 500,
-            color_scale = function(i){return "#80B0FF";},
+            color_scale = function(d,i){return "#80B0FF";},
             x_scale_type = "time",//time或linear
             line_width = 1;
 
@@ -74,6 +74,7 @@ $.fn.d3_linechart = function(){
         var draw_line = undefined;
 
         //在chart中不会修改的函数，允许修改
+        var click_line_trigger = function(){};
         var mousemove_trigger = function(){};
         var zoom_trigger = function(){};
         var pan_trigger = function(){};
@@ -137,7 +138,7 @@ $.fn.d3_linechart = function(){
                 var y_axis = d3.svg.axis()
                     .scale(y_scale)
                     .orient("left")
-                    .tickFormat(d3.format(".4g"))
+                    .tickFormat(d3.format(".3g"))
 
                 var tickValues = [];
                 if (typeof(yTickNum)!="undefined")//如果需要约束y轴的tick的数量
@@ -339,13 +340,26 @@ $.fn.d3_linechart = function(){
                 data_lines.append("path")
                     .attr("class", "line")
                     .attr("d", function(d) { return draw_line(d); })
-                    .attr("stroke", function(_, i) {return color_scale(i);})
+                    .attr("stroke", function(d,i) {
+                        if (color_scale.length == 2)
+                            return color_scale(d,i);
+                        else
+                            return color_scale(i);
+                    })
                     .attr("stroke-width",function(){return line_width;})
+                    /*
                     .on("mouseover",function(){
                         d3.select(this).classed("mouseover_linechart",true)
                     })
                     .on("mouseout",function(){
                         d3.select(this).classed("mouseover_linechart",false)
+                    })
+                    */
+                    .on("click",function(d,i){
+                        if (typeof(click_line_trigger)!="undefined")
+                        {
+                            click_line_trigger(d,i);
+                        }
                     })
 
                 //画标记好颜色的特殊点
@@ -426,6 +440,11 @@ $.fn.d3_linechart = function(){
                     {
                         if (typeof(data[j].style)!="undefined")
                         {
+                            if (color_scale.length == 2)
+                                var color = color_scale(d,i);
+                            else
+                                var color = color_scale(i);
+
                             d3.select(this).append("circle")
                                 .attr("class", "shaped_point")
                                 .data([{
@@ -436,7 +455,7 @@ $.fn.d3_linechart = function(){
                                 .attr("cx",function(d){ return x_scale_safe(d.x) })
                                 .attr("cy",function(d){ return y_scale_safe(d.y) })
                                 .attr("r",function(d){return d.radius})
-                                .attr("fill",color_scale(i))
+                                .attr("fill",color)
                         }
                     }
                 })
@@ -449,7 +468,12 @@ $.fn.d3_linechart = function(){
                         .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                         .attr("x", 3)
                         .attr("dy", ".35em")
-                        .attr("fill", function(_, i) { return color_scale(i); })
+                        .attr("fill", function(d,i) { 
+                            if (color_scale.length == 2)
+                                return color_scale(d,i);
+                            else
+                                return color_scale(i);
+                        })
                         .text(function(d) { return d.name; });
                 }
 
@@ -883,6 +907,17 @@ $.fn.d3_linechart = function(){
                 return;
             }
             zoom_trigger = value;
+            return chart;
+        };
+
+        chart.click_line_trigger = function(value){
+            if (!arguments.length) return click_line_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for click_line_trigger",value);
+                return;
+            }
+            click_line_trigger = value;
             return chart;
         };
 

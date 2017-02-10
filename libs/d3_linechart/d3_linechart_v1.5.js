@@ -1,4 +1,4 @@
-//version 1.5 2016.10.2 20:40
+//version 1.5 2017.2.10 20:40
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -186,10 +186,10 @@ $.fn.d3_linechart = function(){
                         })
                 function mouseover_g(d)
                 {
-                    var corrected_offsetX = d3.event.layerX - margin.left;
+                    var corrected_offsetX = d3.event.offsetX - margin.left;
                     var value_x = x_scale.invert(corrected_offsetX);
                     x.mousemove_value = value_x;
-                    var corrected_offsetY = d3.event.layerY - margin.top;
+                    var corrected_offsetY = d3.event.offsetY - margin.top;
                     var value_y = y_scale.invert(corrected_offsetY);
                     y.mousemove_value = value_y;
                     if (tip_option.use_multi_tip == true)

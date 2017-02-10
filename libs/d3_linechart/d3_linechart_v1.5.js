@@ -1,4 +1,4 @@
-//version 1.5 2016.9.25 11:40
+//version 1.5 2016.10.2 20:40
 //dependency:
 //d3.js version 3.1.6
 //jquery.js version 2.1.1
@@ -23,7 +23,7 @@ $.fn.d3_linechart = function(){
             draw_xgrid = false,
             draw_ygrid = false,
             draw_datalabel = true,
-            margin = {top: 20, right: 20, bottom: 20, left: 20}
+            margin = {top: 20, right: 20, bottom: 20, left: 20},
             yTickNum = undefined,
             draw_xAxis = true,
             draw_yAxis = true,
@@ -75,6 +75,9 @@ $.fn.d3_linechart = function(){
 
         //在chart中不会修改的函数，允许修改
         var click_line_trigger = function(){};
+        var mousedown_line_trigger = function(){};
+        var mouseover_line_trigger = function(){};
+        var mouseup_line_trigger = function(){};
         var mousemove_trigger = function(){};
         var zoom_trigger = function(){};
         var pan_trigger = function(){};
@@ -164,9 +167,13 @@ $.fn.d3_linechart = function(){
                     .y(function(d) { return y_scale_safe(d[1]); });
 
                 var svg = d3.select(this)
-                        .attr("id","svg_"+parent.attr("id"))
                         .attr("width", width)
                         .attr("height", height)
+                if (svg.attr("id") == null)//没有id时才会主动加id
+                {
+                    svg.attr("id","svg_"+parent.attr("id"))
+                }
+
                 g = svg.append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                         .on("mousemove",function(d){ mouseover_g(d); })
@@ -355,6 +362,15 @@ $.fn.d3_linechart = function(){
                         d3.select(this).classed("mouseover_linechart",false)
                     })
                     */
+                    .on("mousedown",function(d,i){
+                        mousedown_line_trigger(d,i);
+                    })
+                    .on("mouseover",function(d,i){
+                        mouseover_line_trigger(d,i);
+                    })
+                    .on("mouseup",function(d,i){
+                        mouseup_line_trigger(d,i);
+                    })
                     .on("click",function(d,i){
                         if (typeof(click_line_trigger)!="undefined")
                         {
@@ -398,6 +414,7 @@ $.fn.d3_linechart = function(){
                 data_lines.each(function(d,i){
                     var data = datasets[i].data;
                     var colored_storage = colored_point_line_storage[i];
+
                     for (var j=0;j<colored_storage.length;++j)
                     {
                         var cur_seg = colored_storage[j];
@@ -413,6 +430,7 @@ $.fn.d3_linechart = function(){
                                 .attr("cy",function(d){ return y_scale_safe(d.y) })
                                 .attr("r",line_width/2)
                                 .attr("fill",color)
+                                //.attr("opacity",1-1/colored_storage.length*j);
                         }
                         else
                         {
@@ -428,7 +446,8 @@ $.fn.d3_linechart = function(){
                                 .attr("d", function(d){ return draw_line(d.line_data)})
                                 .attr("stroke-width",line_width)
                                 .attr("fill","none")
-                                .attr("stroke", color);
+                                .attr("stroke", color)
+                                //.attr("opacity",1-1/colored_storage.length*j)
                         }
                     }
                 })
@@ -439,7 +458,7 @@ $.fn.d3_linechart = function(){
                     for (var j=0;j<data.length;++j)
                     {
                         if (typeof(data[j].style)!="undefined")
-                        {
+                        {   
                             if (color_scale.length == 2)
                                 var color = color_scale(d,i);
                             else
@@ -456,6 +475,7 @@ $.fn.d3_linechart = function(){
                                 .attr("cy",function(d){ return y_scale_safe(d.y) })
                                 .attr("r",function(d){return d.radius})
                                 .attr("fill",color)
+                                .attr("z-index",100)
                         }
                     }
                 })
@@ -907,6 +927,41 @@ $.fn.d3_linechart = function(){
                 return;
             }
             zoom_trigger = value;
+            return chart;
+        };
+
+        
+        chart.mouseover_line_trigger = function(value){
+            if (!arguments.length) return mouseover_line_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for mouseover_line_trigger",value);
+                return;
+            }
+            mouseover_line_trigger = value;
+            return chart;
+        };
+
+        
+        chart.mouseup_line_trigger = function(value){
+            if (!arguments.length) return mouseup_line_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for mouseup_line_trigger",value);
+                return;
+            }
+            mouseup_line_trigger = value;
+            return chart;
+        };
+
+        chart.mousedown_line_trigger = function(value){
+            if (!arguments.length) return mousedown_line_trigger;
+            if (typeof(value)!="function")
+            {
+                console.warn("invalid value for mousedown_line_trigger",value);
+                return;
+            }
+            mousedown_line_trigger = value;
             return chart;
         };
 

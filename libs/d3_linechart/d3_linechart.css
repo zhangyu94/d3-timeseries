@@ -23,12 +23,13 @@
 }
 
 .d3_linechart_line > .line{
-	fill:none;
-  z-index: 3;
+	  fill:none;
+    z-index: 3;
+    opacity: 0.35;
 }
 
 .linechart_grid{
-	fill: none;
+	 fill: none;
 }
 
 .linechart_grid line{
@@ -65,7 +66,7 @@
     opacity: 0.875;
     text-align:center;
     background: #FDFDFD;
-    z-index: 2;
+    z-index: 6;
     font-size: 12px;
     pointer-events:none;
 }

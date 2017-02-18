@@ -83,8 +83,8 @@ var linechart_view = {
             //.height(200)
             //.width(width)
             .x_scale_type("linear")
-            .xlabel("")
-            .ylabel("") 
+            .xlabel("xab")
+            .ylabel("yab") 
             .draw_xgrid(true)
             .draw_ygrid(true)
             .draw_datalabel(true)
@@ -103,10 +103,85 @@ var linechart_view = {
 
         //($("#"+divID).d3_linechart().zoom_to_xrange())([1,2]);
 
+        /*
         ($("#"+"renderplace2").d3_linechart()
             .data(DATACENTER.GLOBAL_STATIC.raw_data)
             .x_scale_type("linear")
             .render())()
+        */
+
+
+
+        function get_horizon_data(heavy_linechart)
+        {
+            var light_linechart = [];
+            for (var i = 0; i < heavy_linechart.data.length; ++i)
+            {
+                var x = heavy_linechart.data[i].x;
+                var y = heavy_linechart.data[i].y;
+                light_linechart.push([x,y])
+            }
+            return light_linechart;
+        }
+
+        var horizon_data = get_horizon_data(DATACENTER.GLOBAL_STATIC.raw_data[0]);
+
+        var mean = horizon_data.reduce(function(sum, cur){return sum + cur[1]}, 0) / horizon_data.length;
+        var normlized_light_line_data = horizon_data.map(function(d){return [d[0], d[1] - mean]})
+
+        var horizon = d3.horizon()
+            .width($("#renderplace2").width())
+            .height($("#renderplace2").height())
+            .bands(10)
+            .colors(["green", "yellow", "yellow", "red"])
+            .opacity(0.3)
+            .interpolate("basis");
+
+        var svg = d3.select("#renderplace2").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+        svg.data([normlized_light_line_data]).call(horizon);
+
+        console.log(svg,horizon)
+        //svg.call(horizon.duration(1000).bands(4).height(200));
+
+
+
+
+        function get_light_data(horizon_data)
+        {
+            var transformed_data = {
+              x: [],
+              y: [],
+            };
+            for (var i = 0; i < horizon_data.length; ++i)
+            {
+              transformed_data.x.push(horizon_data[i][0]);
+              transformed_data.y.push(horizon_data[i][1])
+            }
+            return transformed_data;
+        }
+
+        var transformed_data = get_light_data(horizon_data);
+
+        var svg = d3.select("#renderplace3").append("svg")
+            .attr("width", $("#renderplace3").width())
+            .attr("height", $("#renderplace3").height());
+
+        var linechart = d3.linechart_light()
+            .width(width)
+            .height(height)
+            .draw_xGrid(true)
+            .draw_yGrid(true)
+            .draw_xAxis(true)
+            .draw_yAxis(true)
+            .draw_datalabel(true)
+            .xlabel('xab')
+            .ylabel('yab')
+        svg.data([[transformed_data]]).call(linechart.duration(0));
+          
+        console.log(svg,linechart)
+        //svg.call(linechart.duration(1000).width(200));
 
     },
 

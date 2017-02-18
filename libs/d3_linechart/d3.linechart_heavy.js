@@ -1,12 +1,10 @@
-//version 1.5 2017.2.10 20:40
+//version 1.5 2017.2.18 20:00
 //dependency:
-//d3.js version 3.1.6
+//d3.js version 3.5.17
 //jquery.js version 2.1.1
 
-_d3_linechart_dict = {};
-$.fn.d3_linechart = function(){
-    
-    d3_linechart = function() 
+(function(){
+    d3.linechart = function() 
     {
         //data是唯一的在渲染前强制要求绑定好的属性
         var data = undefined;
@@ -27,7 +25,7 @@ $.fn.d3_linechart = function(){
             yTickNum = undefined,
             draw_xAxis = true,
             draw_yAxis = true,
-            transition_duration = 500,
+            duration = 500,
             color_scale = function(d,i){return "#80B0FF";},
             x_scale_type = "time",//time或linear
             line_width = 1;
@@ -59,13 +57,11 @@ $.fn.d3_linechart = function(){
         var zoom_to_xrange = undefined;
         var draw_tick = undefined;
         var render = function(){
-            if (d3.select(_get_core_element(parent)).select("svg")[0][0]===null)
+            if (d3.select(_get_jquery_core_element(parent)).select("svg")[0][0]===null)
             {
-                d3.select(_get_core_element(parent)).append("svg")
-                    .attr("width",width)
-                    .attr("height",height)   
+                d3.select(_get_jquery_core_element(parent)).append("svg")
             }
-            d3.select(_get_core_element(parent)).select("svg")
+            d3.select(_get_jquery_core_element(parent)).select("svg")
                 .datum(data)
                 .call(chart);
         };
@@ -82,7 +78,7 @@ $.fn.d3_linechart = function(){
         var zoom_trigger = function(){};
         var pan_trigger = function(){};
 
-        function _get_core_element(jquery_element){
+        function _get_jquery_core_element(jquery_element){
             return jquery_element[0];
         }
         
@@ -93,8 +89,8 @@ $.fn.d3_linechart = function(){
 
             selection.each(function(datasets) 
             {
-                var innerwidth = width - margin.left - margin.right;
-                var innerheight = height - margin.top - margin.bottom;
+                var innerWidth = width - margin.left - margin.right;
+                var innerHeight = height - margin.top - margin.bottom;
                 
                 //统计x轴的scale取多少
                 x.data_min = d3.min(datasets, function(d) { return d.data[0].x; });
@@ -106,7 +102,7 @@ $.fn.d3_linechart = function(){
                     x_scale = d3.scale.linear()
                 else if (x_scale_type == "time")
                     x_scale = d3.time.scale()
-                x_scale.range([0, innerwidth])
+                x_scale.range([0, innerWidth])
                     .domain([x.data_min, x.data_max]);
                 function x_scale_safe(x){
                     if (typeof(x)=="undefined")
@@ -126,7 +122,7 @@ $.fn.d3_linechart = function(){
                 y.display_min = y.data_min;
                 y.display_max = y.data_max;
                 y_scale = d3.scale.linear()
-                    .range([innerheight, 0])
+                    .range([innerHeight, 0])
                     .domain([y.data_min, y.data_max]);
                 function y_scale_safe(y){
                     if (typeof(y)=="undefined")
@@ -175,7 +171,12 @@ $.fn.d3_linechart = function(){
                 }
 
                 g = svg.append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                        .attr('transform', function(){
+                            //注意, translate(0,0)与不translate效果不完全一样
+                            //translate(0,0)以后外层div会有白边
+                            if ( (margin.left!=0)||(margin.right!=0) )
+                                return 'translate(' + margin.left + ',' + margin.top + ')'
+                        })
                         .on("mousemove",function(d){ mouseover_g(d); })
                         .on("mouseover",function(d){ mouseover_g(d); })
                         .on("mouseout",function(){
@@ -264,12 +265,12 @@ $.fn.d3_linechart = function(){
                     var x_grid = d3.svg.axis()
                         .scale(x_scale)
                         .orient("top")
-                        .tickSize(innerheight)
+                        .tickSize(innerHeight)
                         .tickFormat("");
 
                     g.append("g")
-                        .attr("class", "x linechart_grid")
-                        .attr("transform", "translate(0," + innerheight + ")")
+                        .attr("class", "x grid")
+                        .attr("transform", "translate(0," + innerHeight + ")")
                         .call(x_grid);
                 }
 
@@ -278,7 +279,7 @@ $.fn.d3_linechart = function(){
                     var y_grid = d3.svg.axis()
                         .scale(y_scale)
                         .orient("right")
-                        .tickSize(innerwidth)
+                        .tickSize(innerWidth)
                         .tickFormat("")
 
                     if (typeof(yTickNum)!="undefined")//如果需要约束y轴的tick的数量
@@ -287,30 +288,30 @@ $.fn.d3_linechart = function(){
                     }   
 
                     g.append("g")
-                        .attr("class", "y linechart_grid")
+                        .attr("class", "y grid")
                         .call(y_grid);
                 }
                 
                 if (draw_xAxis)//如果需要画x轴
                 {
                     g.append("g")
-                            .attr("class", "x linechart_axis")
-                            .attr("transform", "translate(0," + innerheight + ")") 
+                            .attr("class", "x axis")
+                            .attr("transform", "translate(0," + innerHeight + ")") 
                             .call(x_axis)
                         .append("text")
-                            .attr("class","linechart_axis_text")
+                            .attr("class","x label")
                             .attr("dy", "-.71em")
-                            .attr("x", innerwidth)
+                            .attr("x", innerWidth)
                             .text(xlabel);
                 }
 
                 if (draw_yAxis)//如果需要画y轴
                 {
                     g.append("g")
-                            .attr("class", "y linechart_axis")
+                            .attr("class", "y axis")
                             .call(y_axis)
                         .append("text")
-                            .attr("class","linechart_axis_text")
+                            .attr("class","y label")
                             .attr("transform", "rotate(-90)")
                             .attr("y", 6)
                             .attr("dy", "0.71em")
@@ -329,7 +330,7 @@ $.fn.d3_linechart = function(){
                         .attr("class", "x brush")
                         .call(brush)
                         .selectAll("rect")//在call返回的语境，即g的语境下，selectAll
-                        .attr("height", innerheight);
+                        .attr("height", innerHeight);
                 }
 
                 //画线
@@ -525,54 +526,54 @@ $.fn.d3_linechart = function(){
                     {
                         g.selectAll(".d3_linechart_line").selectAll(".line")
                             .transition()
-                            .duration(transition_duration)//duration结束时换上新的折线
+                            .duration(duration)//duration结束时换上新的折线
                             .attr("d", function(d) { return draw_line(d); })
 
-                        g.select(".x.linechart_axis")
+                        g.select(".x.axis")
                             .transition()
-                            .duration(transition_duration)//duration结束时换上新的x轴
+                            .duration(duration)//duration结束时换上新的x轴
                             .call(x_axis);
 
                         if (draw_xgrid)
                         {
-                            g.select(".x.linechart_grid")
+                            g.select(".x.grid")
                                 .transition()
-                                .duration(transition_duration)
+                                .duration(duration)
                                 .call(x_grid);
                         }
 
                         g.selectAll(".label_tick")
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("d",function(d,i){
                                 var display_x = x_scale(d);
-                                return "M"+display_x+","+0 + "L"+display_x+ ","+innerheight;
+                                return "M"+display_x+","+0 + "L"+display_x+ ","+innerHeight;
                             })
 
                         g.selectAll(".mouseoverpoint")
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("cx",function(d,i){ return x_scale_safe(d.x_value) })
                             .attr("cy",function(d,i){ return y_scale_safe(d.y_value) })
 
                         data_lines.selectAll(".linechart_label_text")//line尾巴上的text label
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                     
                         data_lines.selectAll(".colored_point")
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
                         data_lines.selectAll(".colored_line")
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("d", function(d){ return draw_line(d.line_data)})
                     
                         data_lines.selectAll(".shaped_point")
                             .transition()
-                            .duration(transition_duration)
+                            .duration(duration)
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
                     }
@@ -581,19 +582,19 @@ $.fn.d3_linechart = function(){
                         g.selectAll(".d3_linechart_line").selectAll(".line")
                             .attr("d", function(d) { return draw_line(d); })
 
-                        g.select(".x.linechart_axis")
+                        g.select(".x.axis")
                             .call(x_axis);
 
                         if (draw_xgrid)
                         {
-                            g.select(".x.linechart_grid")
+                            g.select(".x.grid")
                                 .call(x_grid);
                         }
 
                         g.selectAll(".label_tick")
                             .attr("d",function(d,i){
                                 var display_x = x_scale_safe(d);
-                                return "M"+display_x+","+0 + "L"+display_x+ ","+innerheight;
+                                return "M"+display_x+","+0 + "L"+display_x+ ","+innerHeight;
                             })
 
                         g.selectAll(".mouseoverpoint")
@@ -740,7 +741,7 @@ $.fn.d3_linechart = function(){
                         .data([x_value])
                         .attr("d",function(d,i){
                             var display_x = x_scale(d);
-                            return "M"+display_x+","+0 + "L"+display_x+ ","+innerheight;
+                            return "M"+display_x+","+0 + "L"+display_x+ ","+innerHeight;
                         })
                         .attr("stroke",color)
                         .attr("stroke-width",1)
@@ -814,7 +815,6 @@ $.fn.d3_linechart = function(){
                     var div = d3.select("#"+id)
                                     .data([{x_value:x_value,y_value:y_value}])
                     div.html(function(d,i){
-                        //console.log(x_scale_type," time?")
                         if (x_scale_type == "time")
                         {
                             return  "<table>" + 
@@ -1112,14 +1112,14 @@ $.fn.d3_linechart = function(){
             return chart;
         };
 
-        chart.transition_duration = function(value){
-            if (!arguments.length) return transition_duration;
+        chart.duration = function(value){
+            if (!arguments.length) return duration;
             if (typeof(value)!="number")
             {
-                console.warn("invalid value for transition_duration",value);
+                console.warn("invalid value for duration",value);
                 return;
             }
-            transition_duration = value;
+            duration = value;
             return chart;
         };
 
@@ -1337,13 +1337,16 @@ $.fn.d3_linechart = function(){
 
         return chart;
     }
+})();
 
+_d3_linechart_dict = {};
+$.fn.d3_linechart = function(){
     var this_id = this.attr("id");
     var this_width = this.width();
     var this_height = this.height();
     if (! (this_id in _d3_linechart_dict) )
     {
-        _d3_linechart_dict[this_id] = d3_linechart()
+        _d3_linechart_dict[this_id] = d3.linechart()
             .parent(this)
             .parent_id(this_id)
             .width(this_width)

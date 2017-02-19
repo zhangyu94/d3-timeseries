@@ -1,4 +1,4 @@
-//version 1.5 2017.2.18 20:00
+//version 1.5 017.2.19 12:00
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1
@@ -57,13 +57,11 @@
         var zoom_to_xrange = undefined;
         var draw_tick = undefined;
         var render = function(){
-            if (d3.select(_get_jquery_core_element(parent)).select("svg")[0][0]===null)
-            {
-                d3.select(_get_jquery_core_element(parent)).append("svg")
-            }
-            d3.select(_get_jquery_core_element(parent)).select("svg")
-                .datum(data)
-                .call(chart);
+            d3.select(_get_jquery_core_element(parent)).selectAll("svg")
+                .data(data)
+                .enter().append("svg")
+            d3.select(_get_jquery_core_element(parent)).selectAll("svg")
+                .call(chart);    
         };
         var x_scale = undefined;
         var y_scale = undefined;

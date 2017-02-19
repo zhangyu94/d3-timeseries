@@ -1,4 +1,4 @@
-//version 1.5 2017.2.18 20:00
+//version 1.5 2017.2.19 12:00
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1
@@ -12,7 +12,7 @@
         //每个元素形如:
         //matrix[i][j] = {val:..., info:...}
         //info用来存储各种与应用相关的信息
-        //matrix的尺寸不需要保证与提供的div的像素数一致
+        //matrix的尺寸不需要保证与提供的div或canvas的像素数一致
         var data = undefined;
         var color_scale = undefined;//[0,1]到颜色的映射函数
         
@@ -26,7 +26,7 @@
             margin = {top: 20, right: 20, bottom: 20, left: 20},
             _calInnerWidth = function() {return width - margin.left - margin.right},
             _calInnerHeight = function() {return height - margin.top - margin.bottom},
-            render_interaction_layer = false;
+            duration = 500;
 
         //在chart中不会修改的其他变量
         var id = undefined;
@@ -43,28 +43,15 @@
 
         //开放的渲染层
         var canvas = undefined;
-        //开放的交互层
-        var interaction_layer = undefined;
-        var div = undefined;
 
         //在chart中会修改的函数，且不允许赋值，只允许访问
+        var scale_rerender = undefined;
         var render = function(){
-            if (d3.select(_get_jquery_core_element(parent)).select(".bitmap_div")[0][0] === null)
-            {
-                d3.select(_get_jquery_core_element(parent)).append("div")
-                    .attr('class','bitmap_div')
-                    .style('transform', function(){
-                        //注意, translate(0,0)与不translate效果不完全一样
-                        //translate(0,0)以后外层div会有白边
-                        if ( (margin.left!=0)||(margin.right!=0) )
-                            return 'translate(' + margin.left + 'px,' + margin.top + 'px)'
-                    })
-                    .style('width', _calInnerWidth() + 'px')
-                    .style('height', _calInnerHeight() + 'px')
-            }
-            d3.select(_get_jquery_core_element(parent)).select(".bitmap_div")
-                .datum(data)
-                .call(chart)
+            d3.select(_get_jquery_core_element(parent)).selectAll("canvas")
+                .data(data)
+                .enter().append("canvas")
+            d3.select(_get_jquery_core_element(parent)).selectAll("canvas")
+                .call(chart);
         };
 
         function _get_jquery_core_element(jquery_element){
@@ -120,24 +107,18 @@
 
             selection.each(function(matrix) 
             {
-                div = d3.select(this)
                 var innerWidth = _calInnerWidth();
                 var innerHeight = _calInnerHeight();
-
-            //
+                
                 /*******************************************************************************
                  ***********************start of canvas render part*****************************
                  *******************************************************************************/
 
-                if (div.select('canvas')[0][0] === null)
-                {
-                    div.append('canvas');
-                }
-                var d3SelectedCanvas = div.select('canvas')
-                        .attr("width", innerWidth)
-                        .attr("height", innerHeight)
-                        .style('position', 'absolute')
-
+                var d3SelectedCanvas = d3.select(this)
+                    .attr("width", innerWidth)
+                    .attr("height", innerHeight)
+                    .style("transform", "translate(" + margin.left + "px," + margin.top + "px)")
+                        
                 canvas = _get_d3_core_element(d3SelectedCanvas);
                 var ctx = canvas.getContext('2d');
 
@@ -189,41 +170,39 @@
                 offscreen_ctx.putImageData(virtual_bitmap,0,0)
 
                 //修正尺寸以后进行正式的渲染
+                /*
                 _set_smoothing(ctx, false)
                 ctx.scale(canvas.width / virtual_bitmap.width, canvas.height / virtual_bitmap.height)
                 ctx.drawImage(offscreen,0,0)
-
+                */
+                scale_rerender = function(width_rate, height_rate)
+                {
+                    canvas.width = canvas.width * width_rate;
+                    canvas.height = canvas.height * height_rate;
+                    
+                    _set_smoothing(ctx, false)
+                    ctx.scale(canvas.width / virtual_bitmap.width, canvas.height / virtual_bitmap.height)
+                    ctx.drawImage(offscreen,0,0)
+                }
+                scale_rerender(1.0,1.0)
                 
 
                 /*******************************************************************************
                  ***********************end of canvas render part*****************************
                  *******************************************************************************/
-            //
-                if (render_interaction_layer == true)
-                {
-                    div.selectAll('svg').remove();
-                    interaction_layer = div.append('svg')
-                            .attr("width", innerWidth)
-                            .attr("height", innerHeight)
-                            .style('position', 'absolute')
-                }
+
                 return
             });
         }
-
-        chart.div = function(){
-            if (!arguments.length) return div;
-            console.warn("cannot be customized: div")
-        };
 
         chart.canvas = function(){
             if (!arguments.length) return canvas;
             console.warn("cannot be customized: canvas")
         };
 
-        chart.interaction_layer = function(){
-            if (!arguments.length) return interaction_layer;
-            console.warn("cannot be customized: interaction_layer")
+        chart.scale_rerender = function(){
+            if (!arguments.length) return scale_rerender;
+            console.warn("cannot be customized: scale_rerender")
         };
 
         chart.render = function(){
@@ -239,17 +218,6 @@
                 return;
             }
             data = value;
-            return chart;
-        };
-
-        chart.render_interaction_layer = function(value) {
-            if (!arguments.length) return render_interaction_layer;
-            if (typeof(value)!="boolean")
-            {
-                console.warn("invalid value for render_interaction_layer",value);
-                return;
-            }
-            render_interaction_layer = value;
             return chart;
         };
 
@@ -272,6 +240,17 @@
                 return;
             }
             id = value;
+            return chart;
+        };
+
+        chart.duration = function(value){
+            if (!arguments.length) return duration;
+            if (typeof(value)!="number")
+            {
+                console.warn("invalid value for duration",value);
+                return;
+            }
+            duration = value;
             return chart;
         };
 

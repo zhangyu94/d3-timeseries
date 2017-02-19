@@ -251,13 +251,14 @@ var linechart_view = {
         var multiresolution = d3.multiresolution()
             .width($("#renderplace5").width())
             .height(200)
-            .margin({top: 50, right: 10, bottom: 20, left: 100})
+            .margin({top: 0, right: 10, bottom: 0, left: 100})
             .color_scale(traffic_light_color_scale())
         div.data([DATACENTER.GLOBAL_STATIC.raw_data[0]]).call(multiresolution);
         
         div.call(multiresolution.duration(1000).height(100));
-        //div.call(multiresolution.duration(1000).height(80));
-        div.call(multiresolution.duration(1000).height(72));
+        div.call(multiresolution.duration(1000).height(75));
+        div.call(multiresolution.duration(1000).height(30));
+        //div.call(multiresolution.duration(1000).height(72));
         
         console.log(div,multiresolution)
 

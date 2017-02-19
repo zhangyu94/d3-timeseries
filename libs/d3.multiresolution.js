@@ -8,7 +8,7 @@
     {
         var width = 640,  
             height = 480, 
-            margin = {top: 20, right: 20, bottom: 20, left: 20},
+            margin = {top: 0, right: 20, bottom: 0, left: 20},
             duration = 500,
             color_scale = undefined,
             //[-无穷, 5)对应resolution0, [5,20)对应resolution1, [20, 无穷]对应resolution2
@@ -94,8 +94,6 @@
 
                     var canvas = div.select("canvas")
                     canvas.data([bitmap_data]).call(bitmap.duration(duration));
-                    
-                    
                 }
                 else if (resolution == 1)//render horizon_graph
                 {

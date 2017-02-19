@@ -1,4 +1,6 @@
-//2017.2.19 12:00 version
+//version 2017.2.19 12:00
+//dependency:
+//d3.js version 3.5.17
 
 (function() {
     d3.horizon = function() 

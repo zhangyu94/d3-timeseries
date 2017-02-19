@@ -1,4 +1,4 @@
-//version 1.5 017.2.19 12:00
+//version 2017.2.19 12:00
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1
@@ -85,14 +85,14 @@
             if (selection.length > 1)
                 console.warn("selection length > 1",selection);
 
-            selection.each(function(datasets) 
+            selection.each(function(dataset_lines) 
             {
                 var innerWidth = width - margin.left - margin.right;
                 var innerHeight = height - margin.top - margin.bottom;
                 
                 //统计x轴的scale取多少
-                x.data_min = d3.min(datasets, function(d) { return d.data[0].x; });
-                x.data_max = d3.max(datasets, function(d) { return d.data[d.data.length-1].x; });
+                x.data_min = d3.min(dataset_lines, function(d) { return d.data[0].x; });
+                x.data_max = d3.max(dataset_lines, function(d) { return d.data[d.data.length-1].x; });
                 x.display_min = x.data_min;
                 x.display_max = x.data_max;
                 
@@ -109,13 +109,13 @@
                 }
 
                 //统计y轴的scale取多少
-                y.data_min = d3.min(datasets, function(d) { 
-                    var dataset = d.data;
-                    return d3.min(dataset,function(d){return d.y})
+                y.data_min = d3.min(dataset_lines, function(d) { 
+                    var dataset_line = d.data;
+                    return d3.min(dataset_line,function(d){return d.y})
                 });
-                y.data_max = d3.max(datasets, function(d) { 
-                    var dataset = d.data;
-                    return d3.max(dataset,function(d){return d.y})
+                y.data_max = d3.max(dataset_lines, function(d) { 
+                    var dataset_line = d.data;
+                    return d3.max(dataset_line,function(d){return d.y})
                 });
                 y.display_min = y.data_min;
                 y.display_max = y.data_max;
@@ -193,9 +193,9 @@
                     y.mousemove_value = value_y;
                     if (tip_option.use_multi_tip == true)
                     {
-                        for (var j=0;j<datasets.length;++j)
+                        for (var j=0;j<dataset_lines.length;++j)
                         {
-                            var search_result = binary_search(value_x,datasets[j].data,"x");
+                            var search_result = binary_search(value_x,dataset_lines[j].data,"x");
                             var search_item = search_result.item;
                             var item_x = search_item.x;
                             var item_y = search_item.y;
@@ -224,9 +224,9 @@
                         else
                         {
                             var final_search_result = undefined;
-                            for (var j=0;j<datasets.length;++j)
+                            for (var j=0;j<dataset_lines.length;++j)
                             {
-                                var temp_search_result = binary_search(value_x,datasets[j].data,"x");
+                                var temp_search_result = binary_search(value_x,dataset_lines[j].data,"x");
                                 if (typeof(final_search_result) == "undefined")
                                     final_search_result = temp_search_result;
                                 else
@@ -332,8 +332,8 @@
                 }
 
                 //画线
-                var data_lines = g.selectAll(".d3_linechart_line")
-                    .data(datasets.map(function(d) {
+                var line_g_selection = g.selectAll(".d3_linechart_line")
+                    .data(dataset_lines.map(function(d) {
                         var zipped_array = [];
                         for (var j=0;j<d.data.length;++j)
                         {
@@ -343,7 +343,7 @@
                     }))
                     .enter().append("g")//每条线包在一个g里面
                     .attr("class", "d3_linechart_line")
-                data_lines.append("path")
+                line_g_selection.append("path")
                     .attr("class", "line")
                     .attr("d", function(d) { return draw_line(d); })
                     .attr("stroke", function(d,i) {
@@ -379,23 +379,23 @@
 
                 //画标记好颜色的特殊点
                 var colored_point_line_storage =[];
-                for (var i=0;i<datasets.length;++i)
+                for (var i=0;i<dataset_lines.length;++i)
                 {
-                    var cur_dataset = datasets[i].data;
+                    var cur_dataset_line = dataset_lines[i].data;
 
                     var cur_line_storage = [];
-                    for (var j=0;j<cur_dataset.length;++j)
+                    for (var j=0;j<cur_dataset_line.length;++j)
                     {
-                        var cur_item = cur_dataset[j];
+                        var cur_item = cur_dataset_line[j];
                         if (typeof(cur_item.color)=="undefined")
                             continue;
 
                         var cur_color = cur_item.color;
                         var length = 1;
                         var cur_seg_storage = [j];
-                        for (var k = j+1;k<cur_dataset.length;++k)
+                        for (var k = j+1;k<cur_dataset_line.length;++k)
                         {
-                            if (cur_dataset[k].color == cur_color)
+                            if (cur_dataset_line[k].color == cur_color)
                             {
                                 length = length +1;
                                 cur_seg_storage.push(k);
@@ -410,8 +410,8 @@
                     colored_point_line_storage.push(cur_line_storage);
                 }
                 //画标记好颜色的特殊点
-                data_lines.each(function(d,i){
-                    var data = datasets[i].data;
+                line_g_selection.each(function(d,i){
+                    var data = dataset_lines[i].data;
                     var colored_storage = colored_point_line_storage[i];
 
                     for (var j=0;j<colored_storage.length;++j)
@@ -452,8 +452,8 @@
                 })
 
                 //画标记好图形的特殊点
-                data_lines.each(function(d,i){
-                    var data = datasets[i].data;
+                line_g_selection.each(function(d,i){
+                    var data = dataset_lines[i].data;
                     for (var j=0;j<data.length;++j)
                     {
                         if (typeof(data[j].style)!="undefined")
@@ -481,9 +481,9 @@
 
                 if (draw_datalabel)//如果需要画线末尾的label
                 {
-                    data_lines.append("text")
+                    line_g_selection.append("text")
                         .attr("class","linechart_label_text")
-                        .datum(function(d, i) { return {name: datasets[i].label, final: d[d.length-1]}; }) 
+                        .datum(function(d, i) { return {name: dataset_lines[i].label, final: d[d.length-1]}; }) 
                         .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                         .attr("x", 3)
                         .attr("dy", ".35em")
@@ -554,22 +554,22 @@
                             .attr("cx",function(d,i){ return x_scale_safe(d.x_value) })
                             .attr("cy",function(d,i){ return y_scale_safe(d.y_value) })
 
-                        data_lines.selectAll(".linechart_label_text")//line尾巴上的text label
+                        line_g_selection.selectAll(".linechart_label_text")//line尾巴上的text label
                             .transition()
                             .duration(duration)
                             .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                     
-                        data_lines.selectAll(".colored_point")
+                        line_g_selection.selectAll(".colored_point")
                             .transition()
                             .duration(duration)
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
-                        data_lines.selectAll(".colored_line")
+                        line_g_selection.selectAll(".colored_line")
                             .transition()
                             .duration(duration)
                             .attr("d", function(d){ return draw_line(d.line_data)})
                     
-                        data_lines.selectAll(".shaped_point")
+                        line_g_selection.selectAll(".shaped_point")
                             .transition()
                             .duration(duration)
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
@@ -599,16 +599,16 @@
                             .attr("cx",function(d,i){ return x_scale_safe(d.x_value) })
                             .attr("cy",function(d,i){ return y_scale_safe(d.y_value) })    
 
-                        data_lines.selectAll(".linechart_label_text")
+                        line_g_selection.selectAll(".linechart_label_text")
                             .attr("transform", function(d) { return ( "translate(" + x_scale_safe(d.final[0]) + "," + y_scale_safe(d.final[1]) + ")" ) ; })
                         
-                        data_lines.selectAll(".colored_point")
+                        line_g_selection.selectAll(".colored_point")
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
-                        data_lines.selectAll(".colored_line")
+                        line_g_selection.selectAll(".colored_line")
                             .attr("d", function(d){ return draw_line(d.line_data)})
 
-                        data_lines.selectAll(".shaped_point")
+                        line_g_selection.selectAll(".shaped_point")
                             .attr("cx",function(d){ return x_scale_safe(d.x) })
                             .attr("cy",function(d){ return y_scale_safe(d.y) })
 

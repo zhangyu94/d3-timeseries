@@ -1,7 +1,8 @@
-//version 1.5 2017.2.19 12:00
+//version 2017.2.19 12:00
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1
+
 (function(){
     d3.linechart_light = function() 
     {
@@ -18,7 +19,7 @@
             duration = 500;
         
         function chart(selection) {
-            selection.each(function(datasets) {
+            selection.each(function(dataset_lines) {
                 //
                 // Create the plot. 
                 //
@@ -27,16 +28,16 @@
                 
                 var x_scale = d3.scale.linear()
                     .range([0, innerwidth])
-                    .domain([ d3.min(datasets, function(d) { return d3.min(d.x); }), 
-                              d3.max(datasets, function(d) { return d3.max(d.x); }) ]) ;
+                    .domain([ d3.min(dataset_lines, function(d) { return d3.min(d.x); }), 
+                              d3.max(dataset_lines, function(d) { return d3.max(d.x); }) ]) ;
                 
                 var y_scale = d3.scale.linear()
                     .range([innerheight, 0])
-                    .domain([ d3.min(datasets, function(d) { return d3.min(d.y); }),
-                              d3.max(datasets, function(d) { return d3.max(d.y); }) ]) ;
+                    .domain([ d3.min(dataset_lines, function(d) { return d3.min(d.y); }),
+                              d3.max(dataset_lines, function(d) { return d3.max(d.y); }) ]) ;
 
                 var color_scale = d3.scale.category10()
-                    .domain(d3.range(datasets.length)) ;
+                    .domain(d3.range(dataset_lines.length)) ;
 
 
                 var x_axis = d3.svg.axis()
@@ -149,7 +150,7 @@
 
 
                 var data_lines_selection = g.selectAll(".d3_linechart_line")
-                    .data(datasets.map(function(d) {return d3.zip(d.x, d.y);}))
+                    .data(dataset_lines.map(function(d) {return d3.zip(d.x, d.y);}))
                 data_lines_selection.enter().append("g")
                     .attr("class", "d3_linechart_line") ;
                 data_lines_selection.exit().remove();
@@ -167,7 +168,7 @@
                 if (draw_datalabel)//如果需要画线末尾的label
                 {
                     g.selectAll(".d3_linechart_line").append("text")
-                        .datum(function(d, i) { return {name: datasets[i].label, final: d[d.length-1]}; }) 
+                        .datum(function(d, i) { return {name: dataset_lines[i].label, final: d[d.length-1]}; }) 
                         .attr("transform", function(d) { 
                             return ( "translate(" + x_scale(d.final[0]) + "," + 
                                      y_scale(d.final[1]) + ")" ) ; })

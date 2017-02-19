@@ -1,4 +1,4 @@
-//version 1.5 2017.2.19 12:00
+//version 2017.2.19 12:00
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1

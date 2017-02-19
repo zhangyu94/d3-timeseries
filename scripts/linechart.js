@@ -244,6 +244,15 @@ var linechart_view = {
             return compound_scale;
         }
 
+    //render multiresolution
+        var div = d3.select("#renderplace4")
+        var multiresolution = d3.multiresolution()
+            .width($("#renderplace4").width())
+            .height($("#renderplace4").height())
+            .margin({top: 50, right: 10, bottom: 20, left: 100})
+            .color_scale(traffic_light_color_scale())
+        div.data([DATACENTER.GLOBAL_STATIC.raw_data[0]]).call(multiresolution);
+
     },
 
 }

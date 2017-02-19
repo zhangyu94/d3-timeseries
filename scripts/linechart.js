@@ -139,11 +139,12 @@ var linechart_view = {
             .bands(10)
             .colors(["green", "yellow", "yellow", "red"])
             .opacity(0.3)
+            .margin({top: 50, right: 10, bottom: 20, left: 100})
             .interpolate("basis");
 
-        var svg = d3.select("#renderplace2")
-            .append("svg")
-            .data([normlized_light_line_data]).call(horizon);
+        var svg = d3.select("#renderplace2").append("svg")
+        svg.data([normlized_light_line_data]).call(horizon);
+        //svg.data([[]]).call(horizon);
 
         console.log(svg,horizon)
         //svg.call(horizon.duration(1000).bands(4).height(200));
@@ -180,7 +181,7 @@ var linechart_view = {
             .xlabel('xab')
             .ylabel('yab')
         svg.data([[transformed_data]]).call(linechart.duration(0));
-          
+        //svg.data([[]]).call(linechart.duration(1000));
         console.log(svg,linechart)
         //svg.call(linechart.duration(1000).width(200));
 
@@ -194,16 +195,16 @@ var linechart_view = {
                 val: line_data.data[i].y,
             }
         }
-
         
         var canvas = d3.select("#renderplace4").append("canvas")
 
         var bitmap = d3.bitmap()
             .width(width)
             .height(height)
-            .margin({top: 50, right: 10, bottom: 20, left: 100})
+            .margin({top: 10, right: 10, bottom: 20, left: 100})
             .color_scale(traffic_light_color_scale())
         canvas.data([matrix]).call(bitmap);
+        //canvas.data([[]]).call(bitmap/*.width(200)*/);
 
         /*
         console.time('bitmap')
@@ -245,13 +246,20 @@ var linechart_view = {
         }
 
     //render multiresolution
-        var div = d3.select("#renderplace4")
+    
+        var div = d3.select("#renderplace5")
         var multiresolution = d3.multiresolution()
-            .width($("#renderplace4").width())
-            .height($("#renderplace4").height())
+            .width($("#renderplace5").width())
+            .height(200)
             .margin({top: 50, right: 10, bottom: 20, left: 100})
             .color_scale(traffic_light_color_scale())
         div.data([DATACENTER.GLOBAL_STATIC.raw_data[0]]).call(multiresolution);
+        
+        div.call(multiresolution.duration(1000).height(100));
+        //div.call(multiresolution.duration(1000).height(80));
+        div.call(multiresolution.duration(1000).height(72));
+        
+        console.log(div,multiresolution)
 
     },
 

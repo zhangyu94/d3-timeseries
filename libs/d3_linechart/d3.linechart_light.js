@@ -20,19 +20,16 @@
         
         function chart(selection) {
             selection.each(function(dataset_lines) {
-                //
-                // Create the plot. 
-                //
-                var innerwidth = width - margin.left - margin.right,
-                    innerheight = height - margin.top - margin.bottom ;
+                var innerWidth = width - margin.left - margin.right,
+                    innerHeight = height - margin.top - margin.bottom ;
                 
                 var x_scale = d3.scale.linear()
-                    .range([0, innerwidth])
+                    .range([0, innerWidth])
                     .domain([ d3.min(dataset_lines, function(d) { return d3.min(d.x); }), 
                               d3.max(dataset_lines, function(d) { return d3.max(d.x); }) ]) ;
                 
                 var y_scale = d3.scale.linear()
-                    .range([innerheight, 0])
+                    .range([innerHeight, 0])
                     .domain([ d3.min(dataset_lines, function(d) { return d3.min(d.y); }),
                               d3.max(dataset_lines, function(d) { return d3.max(d.y); }) ]) ;
 
@@ -67,7 +64,7 @@
                     var x_grid = d3.svg.axis()
                         .scale(x_scale)
                         .orient("bottom")
-                        .tickSize(-innerheight)
+                        .tickSize(-innerHeight)
                         .tickFormat("") ;
 
                     var x_grid_selection = g.selectAll(".x.grid")
@@ -76,7 +73,7 @@
                         .attr("class", "x grid");
                     g.selectAll(".x.grid").transition()
                         .duration(duration)
-                        .attr("transform", "translate(0," + innerheight + ")")
+                        .attr("transform", "translate(0," + innerHeight + ")")
                         .call(x_grid);  
                 }
 
@@ -85,7 +82,7 @@
                     var y_grid = d3.svg.axis()
                         .scale(y_scale)
                         .orient("left") 
-                        .tickSize(-innerwidth)
+                        .tickSize(-innerWidth)
                         .tickFormat("") ;
 
                     var y_grid_selection = g.selectAll(".y.grid")
@@ -105,7 +102,7 @@
                         .attr("class", "x axis")
                     g.selectAll(".x.axis").transition()
                         .duration(duration)
-                        .attr("transform", "translate(0," + innerheight + ")") 
+                        .attr("transform", "translate(0," + innerHeight + ")") 
                         .call(x_axis)
                          
                     var text_selection = g.selectAll(".x.axis").selectAll('.x.label')
@@ -116,7 +113,7 @@
                         .attr("dy", "-.71em")
                     g.selectAll(".x.axis").selectAll('.x.label').transition()
                         .duration(duration)
-                        .attr("x", innerwidth)
+                        .attr("x", innerWidth)
                         .text(xlabel)
                 }
                 

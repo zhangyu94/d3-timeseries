@@ -12,6 +12,7 @@
             y = d3_horizonY,
             width = 960,
             height = 40,
+            margin = {top: 20, right: 20, bottom: 20, left: 20},
             duration = 0;
 
         var opacity = 1;
@@ -23,6 +24,9 @@
         function horizon(selection) {
             selection.each(function(d, i) 
             {
+                var innerWidth = width - margin.left - margin.right,
+                    innerHeight = height - margin.top - margin.bottom ;
+
                 var svg = d3.select(this)
                     .attr("width", width)
                     .attr("height", height)
@@ -47,9 +51,9 @@
                 });
 
                 // Compute the new x- and y-scales, and transform.
-                var x1 = d3.scale.linear().domain([xMin, xMax]).range([0, width]),
-                    y1 = d3.scale.linear().domain([0, yMax]).range([0, height * bands]),
-                    t1 = d3_horizonTransform(bands, height, mode);
+                var x1 = d3.scale.linear().domain([xMin, xMax]).range([0, innerWidth]),
+                    y1 = d3.scale.linear().domain([0, yMax]).range([0, innerHeight * bands]),
+                    t1 = d3_horizonTransform(bands, innerHeight, mode);
 
                 // Retrieve the old scales, if this is an update.
                 if (this.__horizon__) {
@@ -72,19 +76,20 @@
                 defs.enter().append("defs").append("clipPath")
                         .attr("id", "d3_horizon_clip" + id)
                     .append("rect")
-                        .attr("width", width)
-                        .attr("height", height);
+                        .attr("width", innerWidth)
+                        .attr("height", innerHeight);
 
                 defs.select("rect").transition()
                     .duration(duration)
-                    .attr("width", width)
-                    .attr("height", height);
+                    .attr("width", innerWidth)
+                    .attr("height", innerHeight);
 
                 // We'll use a container to clip all horizon layers at once.
                 svg.selectAll("g")
                         .data([null])
                     .enter().append("g")
-                        .attr("clip-path", "url(#d3_horizon_clip" + id + ")");
+                        .attr("clip-path", "url(#d3_horizon_clip" + id + ")")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
                 // Instantiate each copy of the path with different transforms.
                 var path = svg.select("g").selectAll("path")
@@ -93,13 +98,13 @@
                 var d0 = d3_horizonArea
                     .interpolate(interpolate)
                     .x(function(d) { return x0(d[0]); })
-                    .y0(height * bands)
-                    .y1(function(d) { return height * bands - y0(d[1]); })
+                    .y0(innerHeight * bands)
+                    .y1(function(d) { return innerHeight * bands - y0(d[1]); })
                     (data);
 
                 var d1 = d3_horizonArea
                     .x(function(d) { return x1(d[0]); })
-                    .y1(function(d) { return height * bands - y1(d[1]); })
+                    .y1(function(d) { return innerHeight * bands - y1(d[1]); })
                     (data);
 
                 path.enter().append("path")
@@ -126,6 +131,24 @@
             });
             d3.timer.flush();
         }
+
+        horizon.margin = function(value) {
+            if (!arguments.length) return margin;
+            if (typeof(value)!="object")
+            {
+                console.warn("invalid value for margin",value);
+                return;
+            }
+            if (typeof(value.top)=="number")
+                margin.top = value.top;
+            if (typeof(value.right)=="number")
+                margin.right = value.right;
+            if (typeof(value.bottom)=="number")
+                margin.bottom = value.bottom;
+            if (typeof(value.left)=="number")
+                margin.left = value.left;
+            return horizon;
+        };
 
         horizon.duration = function(x) {
             if (!arguments.length) return duration;

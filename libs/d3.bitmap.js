@@ -122,43 +122,57 @@
                 canvas = _get_d3_core_element(d3SelectedCanvas);
                 var ctx = canvas.getContext('2d');
 
-                //统计矩阵matrix[y][x]的x取值范围
-                x.data_max = d3.max(matrix, function(line) { return line.length - 1; });
-                [x.display_min, x.display_max] = [0, x.data_max];
-                //将matrix的某一列映射到bitmap的某一列
-                var x2width = d3.scale.linear()
-                    .domain([0, x.data_max])
-                    .rangeRound([0, innerWidth - 1]);//取整的mapping
-                var width2x = x2width.invert;
-
-                y.data_max = matrix.length - 1;
-                [y.display_min, y.display_max] = [0, y.data_max];
-                //将matrix的某一行映射到bitmap的某一行
-                var y2height = d3.scale.linear()
-                    .domain([0, y.data_max])
-                    .rangeRound([innerHeight - 1, 0]);
-                var height2y = y2height.invert;
-
-                //尺寸与matrix完全一致的虚拟bitmap,实际使用时需要resize
-                var virtual_bitmap = new ImageData(x.data_max + 1, y.data_max + 1);
-                for (var i = 0; i < virtual_bitmap.height; ++i)
+                if (matrix.length != 0)
                 {
-                    var cur_line = matrix[i];
-                    var cur_val_scale = d3.scale.linear()
-                            .domain(d3.extent(cur_line,function(d){ return d.val }))
-                            .range([0,1]);
-                    for (var j = 0; j < virtual_bitmap.width; ++j)
+                    //统计矩阵matrix[y][x]的x取值范围
+                    y.data_max = matrix.length - 1;
+                    [y.display_min, y.display_max] = [0, y.data_max];
+                    //将matrix的某一行映射到bitmap的某一行
+                    var y2height = d3.scale.linear()
+                        .domain([0, y.data_max])
+                        .rangeRound([innerHeight - 1, 0]);
+                    var height2y = y2height.invert;
+
+                    x.data_max = d3.max(matrix, function(line) { return line.length - 1; });
+                    [x.display_min, x.display_max] = [0, x.data_max];
+                    //将matrix的某一列映射到bitmap的某一列
+                    var x2width = d3.scale.linear()
+                        .domain([0, x.data_max])
+                        .rangeRound([0, innerWidth - 1]);//取整的mapping
+                    var width2x = x2width.invert;
+
+                    //尺寸与matrix完全一致的虚拟bitmap,实际使用时需要resize
+                    var virtual_bitmap = new ImageData(x.data_max + 1, y.data_max + 1);
+                    for (var i = 0; i < virtual_bitmap.height; ++i)
                     {
-                        var cur_point = cur_line[j];
-                        var cur_color_string = color_scale(cur_val_scale(cur_point.val));
-                        var cur_color = d3.rgb(cur_color_string);
-                        _set_color(virtual_bitmap, i, j, {
-                            r: cur_color.r,
-                            g: cur_color.g,
-                            b: cur_color.b,
-                            alpha: 150,
-                        })
+                        var cur_line = matrix[i];
+                        var cur_val_scale = d3.scale.linear()
+                                .domain(d3.extent(cur_line,function(d){ return d.val }))
+                                .range([0,1]);
+                        for (var j = 0; j < virtual_bitmap.width; ++j)
+                        {
+                            var cur_point = cur_line[j];
+                            var cur_color_string = color_scale(cur_val_scale(cur_point.val));
+                            var cur_color = d3.rgb(cur_color_string);
+                            _set_color(virtual_bitmap, i, j, {
+                                r: cur_color.r,
+                                g: cur_color.g,
+                                b: cur_color.b,
+                                alpha: 150,
+                            })
+                        }
                     }
+                }
+                else
+                {
+                    //尺寸与matrix完全一致的虚拟bitmap,实际使用时需要resize
+                    var virtual_bitmap = new ImageData(1,1);
+                    _set_color(virtual_bitmap, 0, 0, {
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        alpha: 0,
+                    })
                 }
 
                 //离屏canvas上面存储着虚拟bitmap, 离屏canvas的尺寸与数据矩阵一样大

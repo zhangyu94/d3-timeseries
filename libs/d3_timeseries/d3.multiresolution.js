@@ -8,7 +8,7 @@
     {
         var width = 640,  
             height = 480, 
-            margin = {top: 0, right: 20, bottom: 0, left: 20},
+            margin = {top: 0, right: 0, bottom: 0, left: 0},
             duration = 500,
             color_scale = undefined,
             //[-无穷, 5)对应resolution0, [5,20)对应resolution1, [20, 无穷]对应resolution2
@@ -70,15 +70,18 @@
                     div.selectAll('svg').remove();
                     if (resolution == 0)
                     {
-                        div.append("canvas");
+                        div.append("canvas")
+                            .style('display','block')
                     }
                     if (resolution == 1)
                     {
-                        div.append("svg");
+                        div.append("svg")
+                            .style('display','block')
                     }
                     if (resolution == 2)
                     {
-                        div.append("svg");
+                        div.append("svg")
+                            .style('display','block')
                     }
                 }
                 _handle_layouts(div,resolution,previous_resolution);
@@ -104,7 +107,7 @@
                     var horizon = d3.horizon()
                         .width(width)
                         .height(height)
-                        .bands(10)
+                        .bands(3)
                         .colors(["green", "yellow", "yellow", "red"])
                         .opacity(0.3)
                         .margin(margin)
@@ -187,3 +190,16 @@
     }
 })();
 
+$.fn.d3_multiresolution = function(){
+    if ($(this).data('d3_multiresolution') == undefined)
+    {
+        var this_width = this.width();
+        var this_height = this.height();
+        var renderer = d3.multiresolution()
+            .width(this_width)
+            .height(this_height)
+            .margin({top: 0, right: 0, bottom: 0, left: 0})
+        $(this).data('d3_multiresolution',renderer)
+    }
+    return $(this).data('d3_multiresolution');
+}

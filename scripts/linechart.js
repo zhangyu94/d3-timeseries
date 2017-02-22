@@ -246,7 +246,12 @@ var linechart_view = {
         }
 
     //render multiresolution
-    
+        $("#renderplace5").d3_multiresolution()
+            .margin({top: 0, right: 10, bottom: 0, left: 100})
+            .color_scale(traffic_light_color_scale())
+        d3.select("#renderplace5")
+            .data([DATACENTER.GLOBAL_STATIC.raw_data[0]]).call($("#renderplace5").d3_multiresolution());
+        /*
         var div = d3.select("#renderplace5")
         var multiresolution = d3.multiresolution()
             .width($("#renderplace5").width())
@@ -259,8 +264,14 @@ var linechart_view = {
         div.call(multiresolution.duration(1000).height(75));
         div.call(multiresolution.duration(1000).height(30));
         //div.call(multiresolution.duration(1000).height(72));
+
+        DATACENTER.GLOBAL_STATIC.raw_data[0].data.pop()
+        DATACENTER.GLOBAL_STATIC.raw_data[0].data.pop()
+
+        div.data([DATACENTER.GLOBAL_STATIC.raw_data[0]]).call(multiresolution.duration(1000));
         
         console.log(div,multiresolution)
+        */
 
     },
 

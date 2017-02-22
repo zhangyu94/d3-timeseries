@@ -1337,18 +1337,20 @@
     }
 })();
 
-_d3_linechart_dict = {};
 $.fn.d3_linechart = function(){
-    var this_id = this.attr("id");
-    var this_width = this.width();
-    var this_height = this.height();
-    if (! (this_id in _d3_linechart_dict) )
+    if ($(this).data('d3_linechart') == undefined)
     {
-        _d3_linechart_dict[this_id] = d3.linechart()
+        var this_id = this.attr("id");
+        var this_width = this.width();
+        var this_height = this.height();
+
+        var renderer = d3.linechart()
             .parent(this)
             .parent_id(this_id)
             .width(this_width)
             .height(this_height)
+
+        $(this).data('d3_linechart',renderer)
     }
-    return _d3_linechart_dict[this_id];
+    return $(this).data('d3_linechart');
 }

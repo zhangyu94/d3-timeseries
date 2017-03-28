@@ -5,10 +5,6 @@
 
 (function() {
     d3.bitmap = function() {
-        //tools
-        let _get_jquery_core_element = jquery_element => jquery_element[0];
-        let _get_d3_core_element = d3_element => d3_element[0][0];
-
         //渲染前强制要求绑定好的属性
         //data的数据结构为:
         //2维数组matrix(不要求一定为方形数组)
@@ -60,10 +56,10 @@
         //在chart中会修改的函数，且不允许赋值，只允许访问
         let scale_rerender = undefined;
         let render = function() {
-            d3.select(_get_jquery_core_element(parent)).selectAll("canvas")
+            d3.select(parent[0]).selectAll("canvas")
                 .data(data)
                 .enter().append("canvas")
-            d3.select(_get_jquery_core_element(parent)).selectAll("canvas")
+            d3.select(parent[0]).selectAll("canvas")
                 .call(chart);
         };
 
@@ -119,7 +115,7 @@
                     .attr("height", innerHeight)
                     .style("transform", "translate(" + margin.left + "px," + margin.top + "px)")
 
-                canvas = _get_d3_core_element(d3SelectedCanvas);
+                canvas = d3SelectedCanvas.node();
                 let ctx = canvas.getContext('2d');
 
                 let virtual_bitmap = null;

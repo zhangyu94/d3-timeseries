@@ -67,10 +67,10 @@
         var zoom_to_xrange = undefined;
         var draw_tick = undefined;
         var render = function() {
-            d3.select(_get_jquery_core_element(parent)).selectAll("svg")
+            d3.select(parent[0]).selectAll("svg")
                 .data(data)
                 .enter().append("svg")
-            d3.select(_get_jquery_core_element(parent)).selectAll("svg")
+            d3.select(parent[0]).selectAll("svg")
                 .call(chart);
         };
         var x_scale = undefined;
@@ -86,10 +86,6 @@
         var zoom_trigger = function() {};
         var pan_trigger = function() {};
 
-        function _get_jquery_core_element(jquery_element) {
-            return jquery_element[0];
-        }
-
         function chart(selection) {
             if (selection.length > 1)
                 console.warn("selection length > 1", selection);
@@ -99,12 +95,8 @@
                 var innerHeight = height - margin.top - margin.bottom;
 
                 //统计x轴的scale取多少
-                x.data_min = d3.min(dataset_lines, function(d) {
-                    return d.data[0].x;
-                });
-                x.data_max = d3.max(dataset_lines, function(d) {
-                    return d.data[d.data.length - 1].x;
-                });
+                x.data_min = d3.min(dataset_lines, d => d.data[0].x)
+                x.data_max = d3.max(dataset_lines, d => d.data[d.data.length - 1].x)
                 x.display_min = x.data_min;
                 x.display_max = x.data_max;
 
@@ -115,24 +107,16 @@
                 x_scale.range([0, innerWidth])
                     .domain([x.data_min, x.data_max]);
 
-                function x_scale_safe(x) {
-                    if (typeof(x) == "undefined")
-                        return 0;
-                    return x_scale(x);
-                }
+                let x_scale_safe = x => typeof(x) == "undefined" ? 0 : x_scale(x)
 
                 //统计y轴的scale取多少
                 y.data_min = d3.min(dataset_lines, function(d) {
                     var dataset_line = d.data;
-                    return d3.min(dataset_line, function(d) {
-                        return d.y
-                    })
+                    return d3.min(dataset_line, d => d.y)
                 });
                 y.data_max = d3.max(dataset_lines, function(d) {
                     var dataset_line = d.data;
-                    return d3.max(dataset_line, function(d) {
-                        return d.y
-                    })
+                    return d3.max(dataset_line, d => d.y)
                 });
                 y.display_min = y.data_min;
                 y.display_max = y.data_max;
@@ -140,11 +124,7 @@
                     .range([innerHeight, 0])
                     .domain([y.data_min, y.data_max]);
 
-                function y_scale_safe(y) {
-                    if (typeof(y) == "undefined")
-                        return 0;
-                    return y_scale(y);
-                }
+                let y_scale_safe = y => typeof(y) == "undefined" ? 0 : y_scale(y)
 
                 var x_axis = d3.svg.axis()
                     .scale(x_scale)
@@ -173,12 +153,8 @@
                 draw_line = d3.svg.line()
                     //.interpolate("basis")
                     .interpolate("linear") //不使用linear时，画hover的点不一定能保证和线对齐
-                    .x(function(d) {
-                        return x_scale_safe(d[0]);
-                    })
-                    .y(function(d) {
-                        return y_scale_safe(d[1]);
-                    });
+                    .x(d => x_scale_safe(d[0]))
+                    .y(d => y_scale_safe(d[1]))
 
                 var svg = d3.select(this)
                     .attr("width", width)
@@ -195,12 +171,8 @@
                         if ((margin.left != 0) || (margin.right != 0))
                             return 'translate(' + margin.left + ',' + margin.top + ')'
                     })
-                    .on("mousemove", function(d) {
-                        mouseover_g(d);
-                    })
-                    .on("mouseover", function(d) {
-                        mouseover_g(d);
-                    })
+                    .on("mousemove", mouseover_g)
+                    .on("mouseover", mouseover_g)
                     .on("mouseout", function() {
                         x.mousemove_value = undefined;
                         y.mousemove_value = undefined;
@@ -270,7 +242,6 @@
                         mousemove_trigger(d, search_item);
                     }
                 }
-
 
                 if (draw_xgrid) //如果需要画x轴向上的grid
                 {
@@ -357,18 +328,14 @@
                     .attr("class", "d3_linechart_line")
                 line_g_selection.append("path")
                     .attr("class", "line")
-                    .attr("d", function(d) {
-                        return draw_line(d);
-                    })
+                    .attr("d", d => draw_line(d))
                     .attr("stroke", function(d, i) {
                         if (color_scale.length == 2)
                             return color_scale(d, i);
                         else
                             return color_scale(i);
                     })
-                    .attr("stroke-width", function() {
-                        return line_width;
-                    })
+                    .attr("stroke-width", line_width)
                     /*
                     .on("mouseover",function(){
                         d3.select(this).classed("mouseover_linechart",true)
@@ -377,15 +344,9 @@
                         d3.select(this).classed("mouseover_linechart",false)
                     })
                     */
-                    .on("mousedown", function(d, i) {
-                        mousedown_line_trigger(d, i);
-                    })
-                    .on("mouseover", function(d, i) {
-                        mouseover_line_trigger(d, i);
-                    })
-                    .on("mouseup", function(d, i) {
-                        mouseup_line_trigger(d, i);
-                    })
+                    .on("mousedown", mousedown_line_trigger)
+                    .on("mouseover", mouseover_line_trigger)
+                    .on("mouseup", mouseup_line_trigger)
                     .on("click", function(d, i) {
                         if (typeof(click_line_trigger) != "undefined") {
                             click_line_trigger(d, i);
@@ -436,12 +397,8 @@
                                     x: data[start_index].x,
                                     y: data[start_index].y
                                 }])
-                                .attr("cx", function(d) {
-                                    return x_scale_safe(d.x)
-                                })
-                                .attr("cy", function(d) {
-                                    return y_scale_safe(d.y)
-                                })
+                                .attr("cx", d => x_scale_safe(d.x))
+                                .attr("cy", d => y_scale_safe(d.y))
                                 .attr("r", line_width / 2)
                                 .attr("fill", color)
                                 //.attr("opacity",1-1/colored_storage.length*j);
@@ -456,9 +413,7 @@
                                 .data([{
                                     line_data: line_data
                                 }])
-                                .attr("d", function(d) {
-                                    return draw_line(d.line_data)
-                                })
+                                .attr("d", d => draw_line(d.line_data))
                                 .attr("stroke-width", line_width)
                                 .attr("fill", "none")
                                 .attr("stroke", color)
@@ -484,15 +439,9 @@
                                     y: data[j].y,
                                     radius: data[j].style.radius,
                                 }])
-                                .attr("cx", function(d) {
-                                    return x_scale_safe(d.x)
-                                })
-                                .attr("cy", function(d) {
-                                    return y_scale_safe(d.y)
-                                })
-                                .attr("r", function(d) {
-                                    return d.radius
-                                })
+                                .attr("cx", d => x_scale_safe(d.x))
+                                .attr("cy", d => y_scale_safe(d.y))
+                                .attr("r", d => d.radius)
                                 .attr("fill", color)
                                 .attr("z-index", 100)
                         }
@@ -520,9 +469,7 @@
                             else
                                 return color_scale(i);
                         })
-                        .text(function(d) {
-                            return d.name;
-                        });
+                        .text(d => d.name)
                 }
 
                 zoom_to_xrange = function zoompan_x(extent, is_zoom, force_scale) {
@@ -552,9 +499,7 @@
                         g.selectAll(".d3_linechart_line").selectAll(".line")
                             .transition()
                             .duration(duration) //duration结束时换上新的折线
-                            .attr("d", function(d) {
-                                return draw_line(d);
-                            })
+                            .attr("d", d => draw_line(d))
 
                         g.select(".x.axis")
                             .transition()
@@ -579,12 +524,8 @@
                         g.selectAll(".mouseoverpoint")
                             .transition()
                             .duration(duration)
-                            .attr("cx", function(d, i) {
-                                return x_scale_safe(d.x_value)
-                            })
-                            .attr("cy", function(d, i) {
-                                return y_scale_safe(d.y_value)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x_value))
+                            .attr("cy", d => y_scale_safe(d.y_value))
 
                         line_g_selection.selectAll(".linechart_label_text") //line尾巴上的text label
                             .transition()
@@ -596,40 +537,28 @@
                         line_g_selection.selectAll(".colored_point")
                             .transition()
                             .duration(duration)
-                            .attr("cx", function(d) {
-                                return x_scale_safe(d.x)
-                            })
-                            .attr("cy", function(d) {
-                                return y_scale_safe(d.y)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x))
+                            .attr("cy", d => y_scale_safe(d.y))
                         line_g_selection.selectAll(".colored_line")
                             .transition()
                             .duration(duration)
-                            .attr("d", function(d) {
-                                return draw_line(d.line_data)
-                            })
+                            .attr("d", d => draw_line(d.line_data))
 
                         line_g_selection.selectAll(".shaped_point")
                             .transition()
                             .duration(duration)
-                            .attr("cx", function(d) {
-                                return x_scale_safe(d.x)
-                            })
-                            .attr("cy", function(d) {
-                                return y_scale_safe(d.y)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x))
+                            .attr("cy", d => y_scale_safe(d.y))
                     } else {
                         g.selectAll(".d3_linechart_line").selectAll(".line")
-                            .attr("d", function(d) {
-                                return draw_line(d);
-                            })
+                            .attr("d", d => draw_line(d))
 
                         g.select(".x.axis")
-                            .call(x_axis);
+                            .call(x_axis)
 
                         if (draw_xgrid) {
                             g.select(".x.grid")
-                                .call(x_grid);
+                                .call(x_grid)
                         }
 
                         g.selectAll(".label_tick")
@@ -639,12 +568,8 @@
                             })
 
                         g.selectAll(".mouseoverpoint")
-                            .attr("cx", function(d, i) {
-                                return x_scale_safe(d.x_value)
-                            })
-                            .attr("cy", function(d, i) {
-                                return y_scale_safe(d.y_value)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x_value))
+                            .attr("cy", d => y_scale_safe(d.y_value))
 
                         line_g_selection.selectAll(".linechart_label_text")
                             .attr("transform", function(d) {
@@ -652,24 +577,14 @@
                             })
 
                         line_g_selection.selectAll(".colored_point")
-                            .attr("cx", function(d) {
-                                return x_scale_safe(d.x)
-                            })
-                            .attr("cy", function(d) {
-                                return y_scale_safe(d.y)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x))
+                            .attr("cy", d => y_scale_safe(d.y))
                         line_g_selection.selectAll(".colored_line")
-                            .attr("d", function(d) {
-                                return draw_line(d.line_data)
-                            })
+                            .attr("d", d => draw_line(d.line_data))
 
                         line_g_selection.selectAll(".shaped_point")
-                            .attr("cx", function(d) {
-                                return x_scale_safe(d.x)
-                            })
-                            .attr("cy", function(d) {
-                                return y_scale_safe(d.y)
-                            })
+                            .attr("cx", d => x_scale_safe(d.x))
+                            .attr("cy", d => y_scale_safe(d.y))
 
                     }
 
@@ -678,7 +593,7 @@
                         var top = margin.top;
                         var left = margin.left;
 
-                        if (d3.select(".linechart_reset_zoom" + "#linechart_reset_zoom_" + parent_id)[0][0] === null) //如果之前body没有加过reset按钮，才再画一个，否则不画
+                        if (d3.select(".linechart_reset_zoom" + "#linechart_reset_zoom_" + parent_id).node() === null) //如果之前body没有加过reset按钮，才再画一个，否则不画
                         {
                             _draw_reset_buttom()
 
@@ -773,7 +688,7 @@
                     if (typeof(color) == "undefined")
                         color = "red";
 
-                    if (!(g.select("#" + id)[0][0] === null)) {
+                    if (!(g.select("#" + id).node() === null)) {
                         g.select("#" + id).remove();
                     }
                     g.append("path")
@@ -799,7 +714,7 @@
                         var circle_color = color;
 
                     var flag_new_point = false;
-                    if (g.select("#" + id)[0][0] == null) {
+                    if (g.select("#" + id).node() == null) {
                         flag_new_point = true;
                     }
                     if (flag_new_point) {
@@ -814,14 +729,10 @@
                         }])
                     if (!flag_new_point) {
                         point = point.transition()
-                            .duration(2);
+                            .duration(2)
                     }
-                    point.attr("cx", function(d, i) {
-                            return x_scale_safe(d.x_value);
-                        })
-                        .attr("cy", function(d, i) {
-                            return y_scale_safe(d.y_value);
-                        })
+                    point.attr("cx", d => x_scale_safe(d.x_value))
+                        .attr("cy", d => y_scale_safe(d.y_value))
                         .attr("r", r)
                         .attr("fill", circle_color)
                         .attr("stroke", d3.lab(circle_color).brighter(3))
@@ -838,13 +749,10 @@
                         return;
                     }
 
-                    if (typeof(color) == "undefined")
-                        var tip_color = "#80B0FF";
-                    else
-                        var tip_color = color;
+                    let tip_color = typeof(color) == "undefined" ? "#80B0FF" : color;
 
                     var flag_new_tip = false;
-                    if (d3.select("body").select("#" + id)[0][0] == null) {
+                    if (d3.select("body").select("#" + id).node() == null) {
                         flag_new_tip = true;
                     }
                     if (flag_new_tip) {
@@ -855,8 +763,8 @@
                     }
                     var div = d3.select("#" + id)
                         .data([{
-                            x_value: x_value,
-                            y_value: y_value
+                            x_value,
+                            y_value
                         }])
                     div.html(function(d, i) {
                         if (x_scale_type == "time") {
@@ -884,11 +792,11 @@
                             .duration(1);
                     }
                     div.style("border-color", tip_color)
-                        .style("left", function(d, i) {
+                        .style("left", function(d) {
                             var x_pixel = x_scale_safe(d.x_value);
                             return x_pixel + anchor_left + margin.left - self_width / 2 - left_bias + "px";
                         })
-                        .style("top", function(d, i) {
+                        .style("top", function(d) {
                             var y_pixel = y_scale_safe(d.y_value);
                             return y_pixel + anchor_top + margin.top - self_height - height_bias + "px";
                         })

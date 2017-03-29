@@ -11,7 +11,7 @@ Notice: the Horizon Graph layout is currently a version with minor revision to t
 Dependency: D3-timeseries requires D3 3.x version and jquery as dependency
 Installing: All the content of d3-timeseries plugin is in the folder libs/d3_timeseries. To use bitmap or horizon or linechart, you can just download the corresponding single file (and corresponding css, if it has) in the folder. Two different versions of linechart are provided that share the same css file.
 
-## To render a line chart, follow the listed steps:
+## To render a line chart, follow the listed steps
 
 **Step1**. Binding: use jquery to select a div, and bind a d3_linechart object to it with $("#"+divID).d3_linechart()
 
@@ -19,7 +19,8 @@ Installing: All the content of d3-timeseries plugin is in the folder libs/d3_tim
 
 **Step3**. Render: Evoke ($("#"+divID).d3_linechart().render())() to get the chart rendered. Another option is to use d3_linechart = $("#"+divID).d3_linechart() to get the renderer, and render the chart yourself with svg.datum(data).call(d3_linechart)
 
-## Usage example: 
+## Usage example
+```js
 var data = [{   
     	label: "Data Set 1", 
     	data: [
@@ -51,3 +52,5 @@ var data = [{
             .color_scale(d3.scale.category10())
             .mousemove(function(){/*$("#renderplace1").d3_linechart().x().mousemove_value*/})
             .render())();
+```
+

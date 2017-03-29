@@ -2,6 +2,8 @@
 
 D3 3.0 implementation of timeseries plugin that supports easy customization of bitmap / horizongraph / linechart or multiresolution layout self adaptive to display height. 
 
+The plugin is implemented as a closure that support method chaining.
+
 Notice: the Horizon Graph layout is currently a version with minor revision to the layout in https://bl.ocks.org/mbostock/1483226
 
 ## Installing

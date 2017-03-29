@@ -78,12 +78,12 @@
         var draw_line = undefined;
 
         //在chart中不会修改的函数，允许修改
-        var click_line_trigger = function() {};
+        var click_line_trigger = function(d, i) {};
         var mousedown_line_trigger = function() {};
         var mouseover_line_trigger = function() {};
         var mouseup_line_trigger = function() {};
         var mousemove_trigger = function() {};
-        var zoom_trigger = function(d,i) {};
+        var zoom_trigger = function(d, i) {};
         var pan_trigger = function() {};
 
         function chart(selection) {
@@ -160,9 +160,7 @@
                     .attr('width', width)
                     .attr('height', height)
                 if (svg.attr('id') == null) //没有id时才会主动加id
-                {
                     svg.attr('id', 'svg_' + parent.attr('id'))
-                }
 
                 g = svg.append('g')
                     .attr('transform', function() {
@@ -238,27 +236,26 @@
                         }
                     }
 
-                    if (typeof(mousemove_trigger) != 'undefined') {
-                        mousemove_trigger(d, search_item);
-                    }
+                    if (typeof(mousemove_trigger) != 'undefined')
+                        mousemove_trigger(d, search_item)
                 }
 
-                if (draw_xgrid) //如果需要画x轴向上的grid
-                {
+                //如果需要画x轴向上的grid
+                if (draw_xgrid) {
                     var x_grid = d3.svg.axis()
                         .scale(x_scale)
                         .orient('top')
                         .tickSize(innerHeight)
-                        .tickFormat('');
+                        .tickFormat('')
 
                     g.append('g')
                         .attr('class', 'x grid')
                         .attr('transform', 'translate(0,' + innerHeight + ')')
-                        .call(x_grid);
+                        .call(x_grid)
                 }
 
-                if (draw_ygrid) //如果需要画y轴向右的grid
-                {
+                //如果需要画y轴向右的grid
+                if (draw_ygrid) {
                     var y_grid = d3.svg.axis()
                         .scale(y_scale)
                         .orient('right')
@@ -266,17 +263,15 @@
                         .tickFormat('')
 
                     if (typeof(yTickNum) != 'undefined') //如果需要约束y轴的tick的数量
-                    {
-                        y_grid.tickValues(tickValues);
-                    }
+                        y_grid.tickValues(tickValues)
 
                     g.append('g')
                         .attr('class', 'y grid')
-                        .call(y_grid);
+                        .call(y_grid)
                 }
 
-                if (draw_xAxis) //如果需要画x轴
-                {
+                //如果需要画x轴
+                if (draw_xAxis) {
                     g.append('g')
                         .attr('class', 'x axis')
                         .attr('transform', 'translate(0,' + innerHeight + ')')
@@ -285,11 +280,11 @@
                         .attr('class', 'x label')
                         .attr('dy', '-.71em')
                         .attr('x', innerWidth)
-                        .text(xlabel);
+                        .text(xlabel)
                 }
 
-                if (draw_yAxis) //如果需要画y轴
-                {
+                //如果需要画y轴
+                if (draw_yAxis) {
                     g.append('g')
                         .attr('class', 'y axis')
                         .call(y_axis)
@@ -298,7 +293,7 @@
                         .attr('transform', 'rotate(-90)')
                         .attr('y', 6)
                         .attr('dy', '0.71em')
-                        .text(ylabel);
+                        .text(ylabel)
                 }
 
                 //加brush
@@ -307,12 +302,12 @@
                         .x(x_scale)
                         .on('brushstart', brushstart)
                         .on('brush', brushmove)
-                        .on('brushend', brushend);
+                        .on('brushend', brushend)
                     g.append('g')
                         .attr('class', 'x brush')
                         .call(brush)
                         .selectAll('rect') //在call返回的语境，即g的语境下，selectAll
-                        .attr('height', innerHeight);
+                        .attr('height', innerHeight)
                 }
 
                 //画线
@@ -347,11 +342,7 @@
                     .on('mousedown', mousedown_line_trigger)
                     .on('mouseover', mouseover_line_trigger)
                     .on('mouseup', mouseup_line_trigger)
-                    .on('click', function(d, i) {
-                        if (typeof(click_line_trigger) != 'undefined') {
-                            click_line_trigger(d, i);
-                        }
-                    })
+                    .on('click', click_line_trigger)
 
                 //画标记好颜色的特殊点
                 var colored_point_line_storage = [];
@@ -362,34 +353,34 @@
                     for (var j = 0; j < cur_dataset_line.length; ++j) {
                         var cur_item = cur_dataset_line[j];
                         if (typeof(cur_item.color) == 'undefined')
-                            continue;
+                            continue
 
-                        var cur_color = cur_item.color;
-                        var length = 1;
-                        var cur_seg_storage = [j];
+                        var cur_color = cur_item.color
+                        var length = 1
+                        var cur_seg_storage = [j]
                         for (var k = j + 1; k < cur_dataset_line.length; ++k) {
                             if (cur_dataset_line[k].color == cur_color) {
-                                length = length + 1;
-                                cur_seg_storage.push(k);
+                                length = length + 1
+                                cur_seg_storage.push(k)
                             } else
-                                break;
+                                break
                         }
 
                         cur_line_storage.push(cur_seg_storage)
-                        j = j + (length - 1);
+                        j = j + (length - 1)
                     }
-                    colored_point_line_storage.push(cur_line_storage);
+                    colored_point_line_storage.push(cur_line_storage)
                 }
                 //画标记好颜色的特殊点
                 line_g_selection.each(function(d, i) {
-                    var data = dataset_lines[i].data;
-                    var colored_storage = colored_point_line_storage[i];
+                    var data = dataset_lines[i].data
+                    var colored_storage = colored_point_line_storage[i]
 
                     for (var j = 0; j < colored_storage.length; ++j) {
-                        var cur_seg = colored_storage[j];
-                        var start_index = cur_seg[0];
-                        var color = data[start_index].color;
-                        var length = cur_seg.length;
+                        var cur_seg = colored_storage[j]
+                        var start_index = cur_seg[0]
+                        var color = data[start_index].color
+                        var length = cur_seg.length
                         if (length == 1) {
                             d3.select(this).append('circle')
                                 .attr('class', 'colored_point')
@@ -427,11 +418,7 @@
                     var data = dataset_lines[i].data;
                     for (var j = 0; j < data.length; ++j) {
                         if (typeof(data[j].style) != 'undefined') {
-                            if (color_scale.length == 2)
-                                var color = color_scale(d, i);
-                            else
-                                var color = color_scale(i);
-
+                            let color = color_scale.length == 2 ? color_scale(d, i) : color_scale(i)
                             d3.select(this).append('circle')
                                 .attr('class', 'shaped_point')
                                 .data([{
@@ -456,32 +443,20 @@
                             return {
                                 name: dataset_lines[i].label,
                                 final: d[d.length - 1]
-                            };
+                            }
                         })
                         .attr('transform', function(d) {
                             return ('translate(' + x_scale_safe(d.final[0]) + ',' + y_scale_safe(d.final[1]) + ')');
                         })
                         .attr('x', 3)
                         .attr('dy', '.35em')
-                        .attr('fill', function(d, i) {
-                            if (color_scale.length == 2)
-                                return color_scale(d, i);
-                            else
-                                return color_scale(i);
-                        })
+                        .attr('fill', (d, i) => color_scale.length == 2 ? color_scale(d, i) : color_scale(i))
                         .text(d => d.name)
                 }
 
-                zoom_to_xrange = function zoompan_x(extent, is_zoom, force_scale) {
-                    if (typeof(is_zoom) == 'undefined')
-                        is_zoom = true;
-                    if (typeof(force_scale) == 'undefined')
-                        force_scale = true;
-
+                zoom_to_xrange = function zoompan_x(extent, is_zoom=true, force_scale=true) {
                     if ((extent[0] == x.data_min) && (extent[1] == x.data_max)) //zoom回初始状态后删掉zoom按钮
-                    {
                         d3.select('.linechart_reset_zoom' + '#linechart_reset_zoom_' + parent_id).remove()
-                    }
 
                     hide_zoom_len() //不管任何情况，只要zoom或pan到一个范围后，都需要把len删掉
 
@@ -678,7 +653,7 @@
                     }
                 }
 
-                draw_tick = function(x_value, id, color='red') {
+                draw_tick = function(x_value, id, color = 'red') {
                     if (!(g.select('#' + id).node() === null))
                         g.select('#' + id).remove()
 
@@ -721,14 +696,12 @@
                     g.selectAll('.' + class_name).remove()
                 }
 
-                function draw_mouseovertip(x_value, y_value, id, color) {
+                function draw_mouseovertip(x_value, y_value, id, tip_color = '#80B0FF') {
                     if (x_value < x_scale.domain()[0] || x_value > x_scale.domain()[1]) //越界，此时需要专门删掉之前因为越界而不需要的tip
                     {
                         remove_mouseovertip()
                         return
                     }
-
-                    let tip_color = typeof(color) == 'undefined' ? '#80B0FF' : color
 
                     var flag_new_tip = d3.select('body').select('#' + id).node() == null
                     if (flag_new_tip) {
@@ -760,7 +733,7 @@
                     let [self_width, self_height] = [$('#' + id).width(), $('#' + id).height()]
                     let [height_bias, left_bias] = [15, 0]
 
-                    if (!flag_new_tip) 
+                    if (!flag_new_tip)
                         div = div.transition().duration(1)
 
                     div.style('border-color', tip_color)

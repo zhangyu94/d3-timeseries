@@ -314,22 +314,16 @@
                 var line_g_selection = g.selectAll('.d3_linechart_line')
                     .data(dataset_lines.map(function(d) {
                         var zipped_array = [];
-                        for (var j = 0; j < d.data.length; ++j) {
+                        for (var j = 0; j < d.data.length; ++j)
                             zipped_array.push([d.data[j].x, d.data[j].y])
-                        }
                         return zipped_array;
                     }))
                     .enter().append('g') //每条线包在一个g里面
                     .attr('class', 'd3_linechart_line')
                 line_g_selection.append('path')
                     .attr('class', 'line')
-                    .attr('d', d => draw_line(d))
-                    .attr('stroke', function(d, i) {
-                        if (color_scale.length == 2)
-                            return color_scale(d, i);
-                        else
-                            return color_scale(i);
-                    })
+                    .attr('d', draw_line)
+                    .attr('stroke', (d, i) => color_scale.length == 2 ? color_scale(d, i) : color_scale(i))
                     .attr('stroke-width', line_width)
                     /*
                     .on('mouseover',function(){

@@ -20,9 +20,9 @@
                 bottom: 20,
                 left: 20
             },
-            duration = 500;
+            duration = 500
 
-        let global_value_extent = undefined;
+        let global_value_extent = undefined
 
         function chart(selection) {
             //传入的dataset_lines目前只是一条直线的数据
@@ -30,14 +30,14 @@
             //arr1和arr2都是直接的数字的数组
             selection.each(function(dataset_lines) {
                 let innerWidth = width - margin.left - margin.right,
-                    innerHeight = height - margin.top - margin.bottom;
+                    innerHeight = height - margin.top - margin.bottom
 
                 let x_scale = d3.scale.linear()
                     .range([0, innerWidth])
                     .domain([
                         d3.min(dataset_lines, line => d3.min(line.x)),
                         d3.max(dataset_lines, line => d3.max(line.x))
-                    ]);
+                    ])
 
                 //如果传入了global_value_extent,就用它来初始化y的定义域
                 let value_domain = global_value_extent != undefined ? global_value_extent :
@@ -173,7 +173,7 @@
                     .attr("class", "line")
                 g.selectAll(".d3_linechart_line").selectAll('.line').transition()
                     .duration(duration)
-                    .attr("d", d => draw_line(d))
+                    .attr("d", draw_line)
                     .attr("stroke", (_, i) => color_scale(i))
 
                 if (draw_datalabel) //如果需要画线末尾的label

@@ -73,7 +73,6 @@ var linechart_view = {
     {
 
     //render heavy_linechart
-
         var width  = $("#"+divID).width();
         var height  = $("#"+divID).height();
 
@@ -151,22 +150,22 @@ var linechart_view = {
 
 
     //render light_linechart
-
-        function get_light_data(horizon_data)
+        var transformed_data = DATACENTER.GLOBAL_STATIC.raw_data.map(ele => ele.data)
+        for (let i = 0; i < transformed_data.length; ++i)
         {
-            var transformed_data = {
+            var result = {
               x: [],
               y: [],
             };
-            for (var i = 0; i < horizon_data.length; ++i)
+            for (let j = 0; j < transformed_data[i].length; ++j)
             {
-              transformed_data.x.push(horizon_data[i][0]);
-              transformed_data.y.push(horizon_data[i][1])
+                result.x.push(transformed_data[i][j].x)
+                result.y.push(transformed_data[i][j].y)
             }
-            return transformed_data;
+            transformed_data[i] = result
         }
 
-        var transformed_data = get_light_data(horizon_data);
+        console.log(transformed_data)
 
         var svg = d3.select("#renderplace3").append("svg")
         var linechart = d3.linechart_light()
@@ -180,9 +179,9 @@ var linechart_view = {
             .margin({top: 50, right: 10, bottom: 20, left: 100})
             .xlabel('xab')
             .ylabel('yab')
-        svg.data([[transformed_data]]).call(linechart.duration(0));
+        svg.data([transformed_data]).call(linechart.duration(0));
         //svg.data([[]]).call(linechart.duration(1000));
-        console.log(svg,linechart)
+        //console.log(svg,linechart)
         //svg.call(linechart.duration(1000).width(200));
 
 

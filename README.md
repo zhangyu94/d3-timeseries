@@ -71,17 +71,7 @@ var data = [{
 ### 3. Weibo Footprint 
 ![image](http://note.youdao.com/yws/public/resource/79e994a9eae80352b49dda8385f14c83/xmlnote/C6F64A1AC7D7462C8E6E3A8C461EE5FE/995)
 
-### 4. Weibo Geo  
-![image](http://note.youdao.com/yws/public/resource/79e994a9eae80352b49dda8385f14c83/xmlnote/8ACF803568E34CBF83CD45CCBCA75123/1003)
-
-- mix line chart with bar chart
-
-### 5. Trajectory Cleaning
-![image](http://note.youdao.com/yws/public/resource/79e994a9eae80352b49dda8385f14c83/xmlnote/0D9799E4C2214B4FB568F6C982F9B37E/1008)
-
-- mix parallel coordinates with bar chart
-
-### 6. Earthquake
+### 4. Earthquake
 ![image](http://note.youdao.com/yws/public/resource/79e994a9eae80352b49dda8385f14c83/xmlnote/9D06355B04144A3B8F02CC63C1766CC0/1017)
 
 - multi-level timeline to support overview and detail selecting

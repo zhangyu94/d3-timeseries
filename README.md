@@ -21,37 +21,28 @@ Installing: All the content of d3-timeseries plugin is in the folder libs/d3_tim
 
 ## Usage example
 ```js
-var data = [{   
-    	label: "Data Set 1", 
-    	data: [
-	{x:0,y:0},
-	{x:1,y:1,color:"red"},
-	{x:2,y:2,color:"red"},
-	{x:3,y:-3},
-	{x:4,y:4,color:"red"},
-	{x:5,y:17},
-	{x:6,y:3},
-	{x:7,y:3},
-],}, 
+var linechart = [{   
+        label: "Data Set 1", 
+        data: [
+		{x:0,y:0},
+	    	{x:1,y:1,color:"red"},
+	    	{x:2,y:2,color:"red"},
+	    	{x:3,y:-3},
+	    	{x:4,y:4,color:"red"},
+	    	{x:5,y:17},
+	    	{x:6,y:3},
+	    	{x:7,y:3}
+	]
+}]
 
-($("#"+divID).d3_linechart()
-            .data(data)
-            .height(200)
-            .width(width)
-            .x_scale_type("time")
-            .xlabel("")
-            .ylabel("") 
-            .draw_xgrid(true)
-            .draw_ygrid(true)
-            .draw_datalabel(true)
-            .linechart_id("linechart1")
-            .margin({top: 20, right: 80, bottom:20, left: 40})
-            .yTickNum(5)
-            .draw_xAxis(true)
-            .draw_yAxis(true)
-            .color_scale(d3.scale.category10())
-            .mousemove(function(){/*$("#renderplace1").d3_linechart().x().mousemove_value*/})
-            .render())();
+var renderer = $("#"+divID).d3_linechart()
+	.data([linechart])
+        .x_scale_type("linear")
+        .draw_xgrid(true)
+        .draw_ygrid(true)
+        .margin({top: 20, right: 80, bottom:20, left: 40})
+        .render()
+renderer()
 ```
 
 ## Usage scenarios in our lab

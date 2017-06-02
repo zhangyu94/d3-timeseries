@@ -4,8 +4,6 @@ D3 3.0 implementation of timeseries plugin that supports easy customization of b
 
 The plugin is implemented as a closure that support method chaining.
 
-Notice: the Horizon Graph layout is currently a version with minor revision to the layout in https://bl.ocks.org/mbostock/1483226
-
 ## Installing
 
 Dependency: D3-timeseries requires D3 3.x version and jquery as dependency
@@ -44,3 +42,7 @@ var renderer = $("#"+divID).d3_linechart()
         .render()
 renderer()
 ```
+
+## Credit
+
+The Horizon Graph layout is credit to the layout in https://bl.ocks.org/mbostock/1483226

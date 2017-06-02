@@ -43,6 +43,6 @@ var renderer = $("#"+divID).d3_linechart()
 renderer()
 ```
 
-## Credit
+## Credits
 
 The Horizon Graph layout is credit to the layout in https://bl.ocks.org/mbostock/1483226

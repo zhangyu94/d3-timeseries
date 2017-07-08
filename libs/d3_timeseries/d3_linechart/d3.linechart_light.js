@@ -2,9 +2,21 @@
 //dependency:
 //d3.js version 3.5.17
 //jquery.js version 2.1.1
-
-(function() {
-    d3.linechart_light = function() {
+(function (root, factory) {
+    let lib_name = 'linechart_light'
+    //detect environment
+    if (typeof module === 'object' && module && typeof module.exports === 'object') {
+        module.exports = factory(require('d3')) // CommonJS
+    } else {
+        if (typeof define === 'function' && define.amd) {
+            define(lib_name, ['d3'], factory)// AMD
+        } else {
+        	root['d3'] = root['d3'] || {}
+            root['d3'][lib_name] = factory(root['d3']) // <script>
+        }
+    }
+}(this, function (d3) {
+    let linechart_light = function() {
         let width = 640,
             height = 480,
             xlabel = "",
@@ -337,4 +349,5 @@
 
         return chart
     }
-})()
+    return linechart_light
+}))
